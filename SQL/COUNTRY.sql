@@ -1,0 +1,270 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : data.db
+ Source Server Type    : SQLite
+ Source Server Version : 3026000
+ Source Schema         : main
+
+ Target Server Type    : SQLite
+ Target Server Version : 3026000
+ File Encoding         : 65001
+
+ Date: 10/07/2019 10:59:52
+*/
+
+PRAGMA foreign_keys = false;
+
+-- ----------------------------
+-- Table structure for COUNTRY
+-- ----------------------------
+DROP TABLE IF EXISTS "COUNTRY";
+CREATE TABLE "COUNTRY" (
+  "code" TEXT(2),
+  "libelle" TEXT
+);
+
+-- ----------------------------
+-- Records of COUNTRY
+-- ----------------------------
+BEGIN;
+INSERT INTO "COUNTRY" VALUES ('1A', 'INTERNATIONAL HIGH SEAS');
+INSERT INTO "COUNTRY" VALUES ('AE', 'Emirats Arabes Unis');
+INSERT INTO "COUNTRY" VALUES ('AF', 'Afghanistan');
+INSERT INTO "COUNTRY" VALUES ('AG', 'Antigua et Barbuda');
+INSERT INTO "COUNTRY" VALUES ('AI', 'Anguilla');
+INSERT INTO "COUNTRY" VALUES ('AL', 'Albanie');
+INSERT INTO "COUNTRY" VALUES ('AM', 'Arménie');
+INSERT INTO "COUNTRY" VALUES ('AN', 'Antilles Néerlandaises');
+INSERT INTO "COUNTRY" VALUES ('AO', 'Angola');
+INSERT INTO "COUNTRY" VALUES ('AQ', 'Antarctique');
+INSERT INTO "COUNTRY" VALUES ('AR', 'Argentine');
+INSERT INTO "COUNTRY" VALUES ('AS', 'Samoa Américaines');
+INSERT INTO "COUNTRY" VALUES ('AT', 'Autriche');
+INSERT INTO "COUNTRY" VALUES ('AU', 'Australie');
+INSERT INTO "COUNTRY" VALUES ('AW', 'Aruba');
+INSERT INTO "COUNTRY" VALUES ('AZ', 'Azerbaijan');
+INSERT INTO "COUNTRY" VALUES ('BA', 'Bosnie Herzégovine');
+INSERT INTO "COUNTRY" VALUES ('BB', 'Barbade');
+INSERT INTO "COUNTRY" VALUES ('BD', 'Bangladesh');
+INSERT INTO "COUNTRY" VALUES ('BE', 'Belgique');
+INSERT INTO "COUNTRY" VALUES ('BF', 'Burkina Faso');
+INSERT INTO "COUNTRY" VALUES ('BG', 'Bulgarie');
+INSERT INTO "COUNTRY" VALUES ('BH', 'Bahrain');
+INSERT INTO "COUNTRY" VALUES ('BI', 'Burundi');
+INSERT INTO "COUNTRY" VALUES ('BJ', 'Benin');
+INSERT INTO "COUNTRY" VALUES ('BM', 'Bermude');
+INSERT INTO "COUNTRY" VALUES ('BN', 'Brunei Darussalam');
+INSERT INTO "COUNTRY" VALUES ('BO', 'Bolivie');
+INSERT INTO "COUNTRY" VALUES ('BR', 'Brésil');
+INSERT INTO "COUNTRY" VALUES ('BS', 'Bahamas');
+INSERT INTO "COUNTRY" VALUES ('BT', 'Bhutan');
+INSERT INTO "COUNTRY" VALUES ('BV', 'Bouvet Island');
+INSERT INTO "COUNTRY" VALUES ('BW', 'Botswana');
+INSERT INTO "COUNTRY" VALUES ('BY', 'Belarus');
+INSERT INTO "COUNTRY" VALUES ('BZ', 'Belize');
+INSERT INTO "COUNTRY" VALUES ('CA', 'Canada');
+INSERT INTO "COUNTRY" VALUES ('CC', 'Cocos (Keeling) Islands');
+INSERT INTO "COUNTRY" VALUES ('CD', 'République Démocratique du Congo');
+INSERT INTO "COUNTRY" VALUES ('CF', 'République centrafricaine');
+INSERT INTO "COUNTRY" VALUES ('CG', 'Congo Brazzaville');
+INSERT INTO "COUNTRY" VALUES ('CH', 'Suisse');
+INSERT INTO "COUNTRY" VALUES ('CK', 'Iles Cook');
+INSERT INTO "COUNTRY" VALUES ('CL', 'Chili');
+INSERT INTO "COUNTRY" VALUES ('CM', 'Cameroun');
+INSERT INTO "COUNTRY" VALUES ('CN', 'Chine');
+INSERT INTO "COUNTRY" VALUES ('CO', 'Colombie');
+INSERT INTO "COUNTRY" VALUES ('CR', 'Costa Rica');
+INSERT INTO "COUNTRY" VALUES ('CU', 'Cuba');
+INSERT INTO "COUNTRY" VALUES ('CV', 'Cap Vert');
+INSERT INTO "COUNTRY" VALUES ('CW', 'CURACAO');
+INSERT INTO "COUNTRY" VALUES ('CX', 'Ile Christmas [Australie]');
+INSERT INTO "COUNTRY" VALUES ('CY', 'Chypre');
+INSERT INTO "COUNTRY" VALUES ('CZ', 'République Tchèque');
+INSERT INTO "COUNTRY" VALUES ('DE', 'Allemagne');
+INSERT INTO "COUNTRY" VALUES ('DJ', 'Djibouti');
+INSERT INTO "COUNTRY" VALUES ('DK', 'Danemark');
+INSERT INTO "COUNTRY" VALUES ('DM', 'Dominique');
+INSERT INTO "COUNTRY" VALUES ('DO', 'République dominicaine');
+INSERT INTO "COUNTRY" VALUES ('DZ', 'Algerie');
+INSERT INTO "COUNTRY" VALUES ('EC', 'Equateur');
+INSERT INTO "COUNTRY" VALUES ('EE', 'Estonie');
+INSERT INTO "COUNTRY" VALUES ('EG', 'Egypte');
+INSERT INTO "COUNTRY" VALUES ('EH', 'Sahara occidental');
+INSERT INTO "COUNTRY" VALUES ('ER', 'Erythrée');
+INSERT INTO "COUNTRY" VALUES ('ES', 'Espagne');
+INSERT INTO "COUNTRY" VALUES ('ET', 'Ethiopie');
+INSERT INTO "COUNTRY" VALUES ('EU', 'UNION EUROPEEN');
+INSERT INTO "COUNTRY" VALUES ('FI', 'Finlande');
+INSERT INTO "COUNTRY" VALUES ('FJ', 'Fidji');
+INSERT INTO "COUNTRY" VALUES ('FK', 'Iles Falkland (Malouines)');
+INSERT INTO "COUNTRY" VALUES ('FM', 'Micronesie,Etats Fédérés de');
+INSERT INTO "COUNTRY" VALUES ('FO', 'Iles Féroé');
+INSERT INTO "COUNTRY" VALUES ('FR', 'France');
+INSERT INTO "COUNTRY" VALUES ('GA', 'Gabon');
+INSERT INTO "COUNTRY" VALUES ('GB', 'Grande Bretagne');
+INSERT INTO "COUNTRY" VALUES ('GD', 'Grenade');
+INSERT INTO "COUNTRY" VALUES ('GE', 'Géorgie');
+INSERT INTO "COUNTRY" VALUES ('GF', 'Guyane Française');
+INSERT INTO "COUNTRY" VALUES ('GH', 'Ghana');
+INSERT INTO "COUNTRY" VALUES ('GI', 'Gibraltar');
+INSERT INTO "COUNTRY" VALUES ('GL', 'Groenland');
+INSERT INTO "COUNTRY" VALUES ('GM', 'Gambie');
+INSERT INTO "COUNTRY" VALUES ('GN', 'Guinée konakri');
+INSERT INTO "COUNTRY" VALUES ('GP', 'Guadeloupe');
+INSERT INTO "COUNTRY" VALUES ('GQ', 'Guinée Equatoriale');
+INSERT INTO "COUNTRY" VALUES ('GR', 'Grèce');
+INSERT INTO "COUNTRY" VALUES ('GT', 'Guatemala');
+INSERT INTO "COUNTRY" VALUES ('GU', 'Guam');
+INSERT INTO "COUNTRY" VALUES ('GW', 'Guinée-Bissau');
+INSERT INTO "COUNTRY" VALUES ('GY', 'Guyane');
+INSERT INTO "COUNTRY" VALUES ('HK', 'Hong Kong');
+INSERT INTO "COUNTRY" VALUES ('HM', 'Haute Mer');
+INSERT INTO "COUNTRY" VALUES ('HN', 'Honduras');
+INSERT INTO "COUNTRY" VALUES ('HR', 'Croatie');
+INSERT INTO "COUNTRY" VALUES ('HT', 'Haiti');
+INSERT INTO "COUNTRY" VALUES ('HU', 'Hongrie');
+INSERT INTO "COUNTRY" VALUES ('ID', 'Indonésie');
+INSERT INTO "COUNTRY" VALUES ('IE', 'Irlande');
+INSERT INTO "COUNTRY" VALUES ('IL', 'Israel');
+INSERT INTO "COUNTRY" VALUES ('IM', 'Ile de Man');
+INSERT INTO "COUNTRY" VALUES ('IN', 'Inde');
+INSERT INTO "COUNTRY" VALUES ('IO', 'Territoires Britanni. Océan Indien');
+INSERT INTO "COUNTRY" VALUES ('IQ', 'Iraq');
+INSERT INTO "COUNTRY" VALUES ('IS', 'Islande');
+INSERT INTO "COUNTRY" VALUES ('IT', 'Italie');
+INSERT INTO "COUNTRY" VALUES ('JM', 'Jamaique');
+INSERT INTO "COUNTRY" VALUES ('JO', 'Jordanie');
+INSERT INTO "COUNTRY" VALUES ('JP', 'Japon');
+INSERT INTO "COUNTRY" VALUES ('KE', 'Kenya');
+INSERT INTO "COUNTRY" VALUES ('KG', 'Kyrgyzstan');
+INSERT INTO "COUNTRY" VALUES ('KH', 'Cambodge');
+INSERT INTO "COUNTRY" VALUES ('KI', 'Kiribati');
+INSERT INTO "COUNTRY" VALUES ('KM', 'Comores');
+INSERT INTO "COUNTRY" VALUES ('KN', 'Saint Kitts et Nevis');
+INSERT INTO "COUNTRY" VALUES ('KP', 'Korée démocratique');
+INSERT INTO "COUNTRY" VALUES ('KR', 'République de Korée');
+INSERT INTO "COUNTRY" VALUES ('KW', 'Koweit');
+INSERT INTO "COUNTRY" VALUES ('KY', 'Cayman Islands');
+INSERT INTO "COUNTRY" VALUES ('KZ', 'Kazahkstan');
+INSERT INTO "COUNTRY" VALUES ('LA', 'Laos');
+INSERT INTO "COUNTRY" VALUES ('LB', 'Liban');
+INSERT INTO "COUNTRY" VALUES ('LC', 'Sainte Lucie');
+INSERT INTO "COUNTRY" VALUES ('LI', 'Liechtenstein');
+INSERT INTO "COUNTRY" VALUES ('LK', 'Sri Lanka');
+INSERT INTO "COUNTRY" VALUES ('LR', 'Liberia');
+INSERT INTO "COUNTRY" VALUES ('LS', 'Lesotho');
+INSERT INTO "COUNTRY" VALUES ('LT', 'Lithuanie');
+INSERT INTO "COUNTRY" VALUES ('LU', 'Luxembourg');
+INSERT INTO "COUNTRY" VALUES ('LV', 'Lettonie');
+INSERT INTO "COUNTRY" VALUES ('LY', 'Lybie');
+INSERT INTO "COUNTRY" VALUES ('MA', 'Maroc');
+INSERT INTO "COUNTRY" VALUES ('MC', 'Monaco');
+INSERT INTO "COUNTRY" VALUES ('MD', 'Moldavie');
+INSERT INTO "COUNTRY" VALUES ('MG', 'Madagascar');
+INSERT INTO "COUNTRY" VALUES ('MH', 'Iles Marshall');
+INSERT INTO "COUNTRY" VALUES ('MK', 'Macédoine');
+INSERT INTO "COUNTRY" VALUES ('ML', 'Mali');
+INSERT INTO "COUNTRY" VALUES ('MM', 'Myanmar');
+INSERT INTO "COUNTRY" VALUES ('MN', 'Mongolie');
+INSERT INTO "COUNTRY" VALUES ('MO', 'Macau');
+INSERT INTO "COUNTRY" VALUES ('MP', 'Iles Mariannes du Nord');
+INSERT INTO "COUNTRY" VALUES ('MQ', 'Martinique');
+INSERT INTO "COUNTRY" VALUES ('MR', 'Mauritanie');
+INSERT INTO "COUNTRY" VALUES ('MS', 'Montserrat');
+INSERT INTO "COUNTRY" VALUES ('MT', 'Malte');
+INSERT INTO "COUNTRY" VALUES ('MU', 'Maurice');
+INSERT INTO "COUNTRY" VALUES ('MV', 'Maldives');
+INSERT INTO "COUNTRY" VALUES ('MW', 'Malawi');
+INSERT INTO "COUNTRY" VALUES ('MX', 'Mexique');
+INSERT INTO "COUNTRY" VALUES ('MY', 'Malysie');
+INSERT INTO "COUNTRY" VALUES ('MZ', 'Mozambique');
+INSERT INTO "COUNTRY" VALUES ('NA', 'Namibie');
+INSERT INTO "COUNTRY" VALUES ('NC', 'Nouvelle Calédonie');
+INSERT INTO "COUNTRY" VALUES ('NE', 'Niger');
+INSERT INTO "COUNTRY" VALUES ('NF', 'Ile Norfolk');
+INSERT INTO "COUNTRY" VALUES ('NG', 'Nigéria');
+INSERT INTO "COUNTRY" VALUES ('NI', 'Nicaragua');
+INSERT INTO "COUNTRY" VALUES ('NL', 'Pays Bas');
+INSERT INTO "COUNTRY" VALUES ('NO', 'Norvège');
+INSERT INTO "COUNTRY" VALUES ('NP', 'Népal');
+INSERT INTO "COUNTRY" VALUES ('NR', 'Nauru');
+INSERT INTO "COUNTRY" VALUES ('NU', 'Niue');
+INSERT INTO "COUNTRY" VALUES ('NZ', 'Nouvelle Zélande');
+INSERT INTO "COUNTRY" VALUES ('OM', 'Oman');
+INSERT INTO "COUNTRY" VALUES ('PA', 'Panama');
+INSERT INTO "COUNTRY" VALUES ('PE', 'Pérou');
+INSERT INTO "COUNTRY" VALUES ('PF', 'Polynesie française');
+INSERT INTO "COUNTRY" VALUES ('PG', 'Papouasie Nouvelle Guinée');
+INSERT INTO "COUNTRY" VALUES ('PH', 'Philippines');
+INSERT INTO "COUNTRY" VALUES ('PK', 'Pakistan');
+INSERT INTO "COUNTRY" VALUES ('PL', 'Pologne');
+INSERT INTO "COUNTRY" VALUES ('PM', 'Saint Pierre et Miquelon');
+INSERT INTO "COUNTRY" VALUES ('PN', 'Pitcairn');
+INSERT INTO "COUNTRY" VALUES ('PR', 'Porto Rico');
+INSERT INTO "COUNTRY" VALUES ('PT', 'Portugal');
+INSERT INTO "COUNTRY" VALUES ('PW', 'Palau');
+INSERT INTO "COUNTRY" VALUES ('PY', 'Paraguay');
+INSERT INTO "COUNTRY" VALUES ('QA', 'Qatar');
+INSERT INTO "COUNTRY" VALUES ('RC', 'RDC');
+INSERT INTO "COUNTRY" VALUES ('RE', 'Réunion');
+INSERT INTO "COUNTRY" VALUES ('RO', 'Roumanie');
+INSERT INTO "COUNTRY" VALUES ('RS', 'Serbie');
+INSERT INTO "COUNTRY" VALUES ('RU', 'Russie');
+INSERT INTO "COUNTRY" VALUES ('RW', 'Rwanda');
+INSERT INTO "COUNTRY" VALUES ('SA', 'Arabie Saoudite');
+INSERT INTO "COUNTRY" VALUES ('SB', 'Iles Solomon');
+INSERT INTO "COUNTRY" VALUES ('SC', 'Seychelles');
+INSERT INTO "COUNTRY" VALUES ('SD', 'Soudan');
+INSERT INTO "COUNTRY" VALUES ('SE', 'Suède');
+INSERT INTO "COUNTRY" VALUES ('SG', 'Singapour');
+INSERT INTO "COUNTRY" VALUES ('SH', 'Sainte Hélène');
+INSERT INTO "COUNTRY" VALUES ('SI', 'Slovénie');
+INSERT INTO "COUNTRY" VALUES ('SJ', 'Iles Svalbard et Jan Mayen');
+INSERT INTO "COUNTRY" VALUES ('SK', 'Slovaquie');
+INSERT INTO "COUNTRY" VALUES ('SL', 'Sierra Leone');
+INSERT INTO "COUNTRY" VALUES ('SM', 'San Marino');
+INSERT INTO "COUNTRY" VALUES ('SN', 'Sénégal');
+INSERT INTO "COUNTRY" VALUES ('SO', 'Somalie');
+INSERT INTO "COUNTRY" VALUES ('SR', 'Suriname');
+INSERT INTO "COUNTRY" VALUES ('ST', 'Sao Tome et Principe');
+INSERT INTO "COUNTRY" VALUES ('SV', 'El Salvador');
+INSERT INTO "COUNTRY" VALUES ('SY', 'Syrie');
+INSERT INTO "COUNTRY" VALUES ('SZ', 'Swaziland');
+INSERT INTO "COUNTRY" VALUES ('TC', 'Turquie');
+INSERT INTO "COUNTRY" VALUES ('TD', 'Tchad');
+INSERT INTO "COUNTRY" VALUES ('TF', 'Terres Australes Francaises');
+INSERT INTO "COUNTRY" VALUES ('TG', 'Togo');
+INSERT INTO "COUNTRY" VALUES ('TH', 'Thailande');
+INSERT INTO "COUNTRY" VALUES ('TJ', 'Tajikistan');
+INSERT INTO "COUNTRY" VALUES ('TK', 'Tokelau');
+INSERT INTO "COUNTRY" VALUES ('TM', 'Turkmenistan');
+INSERT INTO "COUNTRY" VALUES ('TN', 'Tunisie');
+INSERT INTO "COUNTRY" VALUES ('TO', 'Tonga');
+INSERT INTO "COUNTRY" VALUES ('TR', 'Turquie');
+INSERT INTO "COUNTRY" VALUES ('TT', 'Trinidad et Tobago');
+INSERT INTO "COUNTRY" VALUES ('TV', 'Tuvalu');
+INSERT INTO "COUNTRY" VALUES ('TW', 'Taiwan, Province of China');
+INSERT INTO "COUNTRY" VALUES ('TZ', 'Tanzanie');
+INSERT INTO "COUNTRY" VALUES ('UA', 'Ukraine');
+INSERT INTO "COUNTRY" VALUES ('UG', 'Ouganda');
+INSERT INTO "COUNTRY" VALUES ('UK', 'UKRAINE');
+INSERT INTO "COUNTRY" VALUES ('US', 'Etats Unis');
+INSERT INTO "COUNTRY" VALUES ('UY', 'Uruguay');
+INSERT INTO "COUNTRY" VALUES ('UZ', 'Uzbekistan');
+INSERT INTO "COUNTRY" VALUES ('VA', 'Vatican');
+INSERT INTO "COUNTRY" VALUES ('VC', 'Saint Vincent et les Grenadines');
+INSERT INTO "COUNTRY" VALUES ('VE', 'Venezuela');
+INSERT INTO "COUNTRY" VALUES ('VG', 'British Virgin Islands');
+INSERT INTO "COUNTRY" VALUES ('VI', 'Iles Vierges des Etats Unis');
+INSERT INTO "COUNTRY" VALUES ('VN', 'Vietnam');
+INSERT INTO "COUNTRY" VALUES ('VU', 'Vanuatu');
+INSERT INTO "COUNTRY" VALUES ('WF', 'Wallis et Futuna');
+INSERT INTO "COUNTRY" VALUES ('WS', 'Samoa');
+INSERT INTO "COUNTRY" VALUES ('YE', 'Yemen');
+INSERT INTO "COUNTRY" VALUES ('ZA', 'Afrique du Sud');
+INSERT INTO "COUNTRY" VALUES ('ZM', 'Zambie');
+INSERT INTO "COUNTRY" VALUES ('ZW', 'Zimbabwe');
+COMMIT;
+
+PRAGMA foreign_keys = true;

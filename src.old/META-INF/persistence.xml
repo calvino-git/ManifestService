@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="ASYCUDAPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>db.Escale</class>
+    <class>db.Navire</class>
+    <class>db.BillOfLanding</class>
+    <class>db.Container</class>
+    <class>db.GeneralInfo</class>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@192.168.100.90:1521:cargo"/>
+      <property name="javax.persistence.jdbc.user" value="ppncargo"/>
+      <property name="javax.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver"/>
+      <property name="javax.persistence.jdbc.password" value="ppncargo"/>
+    </properties>
+  </persistence-unit>
+  <persistence-unit name="ManifestServicePU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>db.CongoTerminal</class>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://172.30.1.100:3306/manifest?zeroDateTimeBehavior=convertToNull"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.password" value="Papn@2018"/>
+    </properties>
+  </persistence-unit>
+</persistence>
