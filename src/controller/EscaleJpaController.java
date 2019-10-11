@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package jpa.controlleurs;
+package controller;
 
-import jpa.exceptions.NonexistentEntityException;
-import jpa.exceptions.PreexistingEntityException;
+import exception.NonexistentEntityException;
+import exception.PreexistingEntityException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import javax.persistence.Query;
@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import jpa.beans.Escale;
-import jpa.beans.GeneralInfo;
-import jpa.beans.Navire;
+import model.Escale;
+import model.GeneralInfo;
+import model.Navire;
 
 /**
  *

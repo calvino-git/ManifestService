@@ -1,7 +1,7 @@
 package dao;
 
-import static bases.Const.LOG;
-import static bases.Const.PROPERTIES;
+import static util.Const.LOG;
+import static util.Const.PROPERTIES;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

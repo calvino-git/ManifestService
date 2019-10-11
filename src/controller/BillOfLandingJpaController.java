@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package jpa.controlleurs;
+package controller;
 
-import jpa.exceptions.IllegalOrphanException;
-import jpa.exceptions.NonexistentEntityException;
-import jpa.exceptions.PreexistingEntityException;
+import exception.IllegalOrphanException;
+import exception.NonexistentEntityException;
+import exception.PreexistingEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import jpa.beans.BillOfLanding;
-import jpa.beans.Container;
-import jpa.beans.GeneralInfo;
+import model.BillOfLanding;
+import model.Container;
+import model.GeneralInfo;
 
 /**
  *

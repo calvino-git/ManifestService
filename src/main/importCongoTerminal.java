@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package manifestservice;
+package main;
 
-import static bases.Const.LOG;
-import static bases.Const.QUERY_CT;
+import static util.Const.LOG;
+import static util.Const.QUERY_CT;
 import dao.DbHandler;
-import jpa.beans.CongoTerminal;
+import model.CongoTerminal;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
