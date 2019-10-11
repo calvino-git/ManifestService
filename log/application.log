@@ -45936,3 +45936,32 @@
 2019-10-11 15:25:27,222 [INFO ] (ManifesteService.java:persistenceXML:414) Date de depart:2019-09-13
  Mois : 201909
 2019-10-11 15:25:27,222 [INFO ] (ManifesteService.java:persistenceXML:425) ===> Recherche dans le fichier de CONGO TERMINAL : 201909
+2019-10-11 15:34:28,265 [INFO ] (ManifesteService.java:runAction:110) FICHIER Manifest-PAPN-EXP-13092019-13092019-17092019-154407.xml
+2019-10-11 15:34:28,280 [INFO ] (XmlObject.java:xmlToAwmds:27) Chargement du fichier XML en objet AWMDS
+2019-10-11 15:34:28,577 [INFO ] (ManifestMethods.java:renameManifest:403) Generation du nom complet...
+2019-10-11 15:34:28,577 [INFO ] (ManifestMethods.java:renameManifest:409) MANIFESTE EXPORT 
+2019-10-11 15:34:28,577 [INFO ] (ManifestMethods.java:copyInfoManifest:96) ==> Navire : CMA CGM ATTILA
+2019-10-11 15:34:28,577 [INFO ] (ManifestMethods.java:copyInfoManifest:97) ==> Numéro de voyage : VQA50407E
+2019-10-11 15:34:28,577 [INFO ] (ManifestMethods.java:copyInfoManifest:98) ==> Date de départ : 20190913
+2019-10-11 15:34:28,577 [INFO ] (ManifestMethods.java:copyInfoManifest:99) ==> Date d'arrivée : 20190913
+2019-10-11 15:34:29,092 [INFO ] (ManifestMethods.java:searchEscaleForExport:120) ===> Connexion à la base de donnnée avec succès.
+2019-10-11 15:34:29,202 [INFO ] (ManifestMethods.java:searchEscaleForExport:122) ********************************************
+2019-10-11 15:34:29,217 [INFO ] (ManifestMethods.java:searchEscaleForExport:127) Recherche des escales probable du navire CMACGMATTILA sur la période du 20190906 au 20190920
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:searchEscaleForExport:138) ********************************************
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:searchEscaleForExport:139) Nombre d'escales trouvés : 1
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:searchEscaleForExport:140) ********************************************
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:lambda$searchEscaleForExport$0:150) Navire : CMA CGM ATTILA | CMA CGM ATTILA
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:lambda$searchEscaleForExport$0:151) Voyage : 04F4CE1MA | VQA50407E
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:lambda$searchEscaleForExport$0:152) Date départ : 20190913 | 2019-09-13
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:lambda$searchEscaleForExport$0:153) Numero Escale : 2019002615 | 
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:lambda$searchEscaleForExport$0:154) Escleunik : 56010 | 0
+2019-10-11 15:34:29,686 [INFO ] (ManifestMethods.java:lambda$searchEscaleForExport$0:161) ********************************************
+2019-10-11 15:34:29,686 [INFO ] (ManifesteService.java:runAction:125) Formatage du nom terminé.
+2019-10-11 15:34:29,686 [INFO ] (ManifesteService.java:runAction:128) C://manifest//out/\2019\09\EXPORT\CMA_CGM_ATTILA\2019002615\Manifest-PAPN-EXP-56010-2019002615-20190913-20190913-17092019-154407.xml
+2019-10-11 15:34:29,686 [INFO ] (ManifesteService.java:runAction:136) ============ DEBUT TRATITEMENT  ============
+2019-10-11 15:34:29,811 [INFO ] (ManifesteService.java:runAction:155) ===> CONNECTION :true
+2019-10-11 15:34:29,811 [INFO ] (ManifesteService.java:persistenceXML:385) =======================================
+2019-10-11 15:34:29,811 [INFO ] (ManifesteService.java:persistenceXML:386) ===========>DEBUT PERSISTENCE XML<===========
+2019-10-11 15:34:29,811 [INFO ] (ManifesteService.java:persistenceXML:410) Date de depart:2019-09-13
+ Mois : 201909
+2019-10-11 15:34:29,811 [INFO ] (ManifesteService.java:persistenceXML:421) ===> Recherche dans le fichier de CONGO TERMINAL : 201909
