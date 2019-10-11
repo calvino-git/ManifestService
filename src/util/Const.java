@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class Const {
 
     public static Connection connection = null;
-    public static final ResourceBundle PROPERTIES = ResourceBundle.getBundle("properties.__config");
+    public static final ResourceBundle PROPERTIES = ResourceBundle.getBundle("config.__config");
     public static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
     public static final String PRE_MAN_EXP = "Manifest";
     public static final String PRE_MAN_IMP = "Manifest";
@@ -50,7 +50,7 @@ public class Const {
     public static final EntityManagerFactory EMF = Persistence.createEntityManagerFactory("ASYCUDAPU");
     public static final GeneralInfoJpaController GIJC = new GeneralInfoJpaController(EMF);
     public static final BillOfLandingJpaController BOLJC = new BillOfLandingJpaController(EMF);
-    public static final ContainerJpaController CTNJC = new ContainerJpaController(EMF);
+    public static final ContainerJpaController CJC = new ContainerJpaController(EMF);
     public static final EscaleJpaController ESCJC = new EscaleJpaController(EMF);
     public static final Logger LOG = LoggerFactory.getLogger("LOG_RECORD");
     public static final referenceTable REF = new referenceTable();

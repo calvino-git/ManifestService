@@ -55,6 +55,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.fonts.InvalidFontException;
 import org.apache.commons.net.ftp.FTPClient;
+import util.PersistObject;
 
 /**
  *
@@ -76,10 +77,6 @@ public class ManifesteService {
     private static final FTPClient FTP = new FTPClient();
     private static Connection connection;
     private static File jrprint;
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ASYCUDAPU");
-    private static final GeneralInfoJpaController gijc = new GeneralInfoJpaController(emf);
-    private static final BillOfLandingJpaController bljc = new BillOfLandingJpaController(emf);
-    private static final ContainerJpaController cjc = new ContainerJpaController(emf);
     static ObjectFactory obj = new ObjectFactory();
 
     public static void main(String[] args) {
@@ -248,7 +245,7 @@ public class ManifesteService {
             throw new NullPointerException("id_manifest est egale à 0. verifier la connection avec DB");
         }
         setReportFilename(xmlFile.getName().substring(1, xmlFile.getName().length() - 4));
-        EscaleJpaController ejc = new EscaleJpaController(emf);;
+        EscaleJpaController ejc = new EscaleJpaController(EMF);;
         String code = null;
         try {
             Double id_escale = Double.valueOf(xmlFile.getName().substring(18, 23));
@@ -349,7 +346,7 @@ public class ManifesteService {
 
     public static void deleteGI(int id) {
         try {
-            gijc.destroy(id);
+            GIJC.destroy(id);
         } catch (IllegalOrphanException | NonexistentEntityException ex) {
             LOG.error("GENERAL-INFO NON EXISTANT" + id);
         }
@@ -358,7 +355,7 @@ public class ManifesteService {
 
     public static void deleteBL(int id) {
         try {
-            bljc.destroy(id);
+            BOLJC.destroy(id);
         } catch (IllegalOrphanException | NonexistentEntityException ex) {
             LOG.error("BOL NON EXISTANT" + id);
         }
@@ -366,14 +363,14 @@ public class ManifesteService {
 
     public static void deleteCT(int id) {
         try {
-            cjc.destroy(id);
+            CJC.destroy(id);
         } catch (NonexistentEntityException ex) {
             LOG.error("CONTNEUR NON EXISTANT" + id);
         }
     }
 
     public static void deleteManifeste(int id) {
-        GeneralInfo gi = gijc.findGeneralInfo(id);
+        GeneralInfo gi = GIJC.findGeneralInfo(id);
         gi.getBillOfLandingCollection().forEach(bl -> {
             bl.getContainerCollection().forEach(ct -> {
                 deleteCT(ct.getIdCtn());
@@ -433,6 +430,8 @@ public class ManifesteService {
                     PortDestination.searchPortTRB(awmds);
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
+                    int nbrBolUpdated = PersistObject.updateBolPort(awmds, escale);
+                    LOG.info("BOLs MIS A JOUR : " + nbrBolUpdated);
                     id = manifestToDB(awmds, escale);// after stored in db, the pk id of the current manifest is returned
 
                 } catch (SQLException ex) {
@@ -446,6 +445,8 @@ public class ManifesteService {
                 PortDestination.searchPortTRB(awmds);
 //                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
 //                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
+                int nbrBolUpdated = PersistObject.updateBolPort(awmds, escale);
+                LOG.info("BOLs MIS A JOUR : " + nbrBolUpdated);
                 id = manifestToDB(awmds, escale);
             }
         } else {
@@ -454,6 +455,8 @@ public class ManifesteService {
             LOG.info("Nombre de manifestes existants supprimes : " + nbrManifestDeleted);
             if (id == 0) {
                 try {
+                    int nbrBolUpdated = PersistObject.updateBolPort(awmds, escale);
+                    LOG.info("BOLs MIS A JOUR : " + nbrBolUpdated );
                     id = manifestToDB(awmds, escale);// after stored in db, the pk id of the current manifest is returned
                 } catch (SQLException ex) {
                     LOG.error("Integration du manifeste a recontre un probleme [" + ex.getSQLState() + "] " + ex.getMessage());
@@ -500,8 +503,7 @@ public class ManifesteService {
         connection = DbHandler.getDbConnection();
         try {
             Statement stmt = connection.createStatement();
-            GeneralInfoJpaController gjc = new GeneralInfoJpaController(emf);
-            GeneralInfo gen = gjc.findGeneralInfo(id_manifest);
+            GeneralInfo gen = GIJC.findGeneralInfo(id_manifest);
             Awmds.GeneralSegment sg = xtractSegmentGeneral(gen, stmt);
             man.setGeneralSegment(sg);
             gen.getBillOfLandingCollection().stream().map((bol) -> {

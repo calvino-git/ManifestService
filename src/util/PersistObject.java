@@ -461,8 +461,8 @@ public class PersistObject {
                 newctn.setNumberOfPackages(String.valueOf(ctn.getNumberOfPackages()));
                 newctn.setSealingParty(ctn.getSealingParty());
                 newctn.setTypeOfContainer(ctn.getTypeOfContainer());
-                newctn.setIdCtn(CTNJC.findLastId());
-                CTNJC.create(newctn);
+                newctn.setIdCtn(CJC.findLastId());
+                CJC.create(newctn);
                 ctnrs.add(newctn); // 
             } catch (Exception ex) {
                 ex.printStackTrace();
