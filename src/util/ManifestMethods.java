@@ -94,8 +94,12 @@ public class ManifestMethods {
 
         LOG.info("==> Navire : " + newEscale.getNavire());
         LOG.info("==> Numéro de voyage : " + newEscale.getVoyage());
+        LOG.info("==> Provenance : " + man.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode());
+        LOG.info("==> Destination : " + man.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDestinationCode());
         LOG.info("==> Date de départ : " + newEscale.getDateDepart().substring(0, 4) + newEscale.getDateDepart().substring(5, 7) + newEscale.getDateDepart().substring(8, 10));
         LOG.info("==> Date d'arrivée : " + newEscale.getDateArrivee().substring(0, 4) + newEscale.getDateArrivee().substring(5, 7) + newEscale.getDateArrivee().substring(8, 10));
+        LOG.info("==> Nombre de BLs : " + man.getGeneralSegment().getTotalsSegment().getTotalNumberOfBols());
+        LOG.info("==> Nombre de CTNs : " + man.getGeneralSegment().getTotalsSegment().getTotalNumberOfContainers());
     }
 
     public static Escale searchEscaleForExport(Escale escaleCible) {
@@ -313,15 +317,22 @@ public class ManifestMethods {
         if (escale.getNumero() != null) {
             String dateDepart = escale.getDateDepart();
             // String day =dateArrivee.substring(6,8);
-            String month = dateDepart.substring(4, 6);
-            String year = dateDepart.substring(0, 4);
+            String month = dateDepart.replace("-", "").substring(4, 6);
+            String year = dateDepart.replace("-", "").substring(0, 4);
             String numeroEscale = escale.getNumero();
             String navire = escale.getNavire().replace(" ", "_");
             String trafic = escale.getTrafic();
-            str = str + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
+            if(escale.getEscleunik() == 0){
+                str = str + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic  + File.separator + navire + File.separator
                     + numeroEscale;
-            str2 = str2 + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
+            str2 = str2 + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
+            }else{
+            str = str + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
+                    + numeroEscale;
+            str2 = str2 + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
+                    + numeroEscale;
+            }
         }
         Path path = Paths.get(str);
         Path path2 = Paths.get(str2);
@@ -363,15 +374,22 @@ public class ManifestMethods {
         if (escale.getNumero() != null) {
             String dateArrivee = escale.getDateArrivee();
             // String day =dateArrivee.substring(6,8);
-            String month = dateArrivee.substring(4, 6);
-            String year = dateArrivee.substring(0, 4);
+            String month = dateArrivee.replace("-", "").substring(4, 6);
+            String year = dateArrivee.replace("-", "").substring(0, 4);
             String numeroEscale = escale.getNumero();
             String navire = escale.getNavire().replace(" ", "_");
             String trafic = escale.getTrafic();
+            if(escale.getEscleunik() == 0){
+                str = str + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic  + File.separator + navire + File.separator
+                    + numeroEscale;
+            str2 = str2 + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
+                    + numeroEscale;
+            }else{
             str = str + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
             str2 = str2 + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
+            }
         }
         Path path = Paths.get(str);
         Path path2 = Paths.get(str2);

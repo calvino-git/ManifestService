@@ -15,9 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import model.BillOfLanding;
 import model.Container;
 import model.GeneralInfo;
@@ -212,7 +214,7 @@ public class PersistObject {
                 if (ex.getMessage().contains("ORA-02289")) {
                     LOG.error("ORA-02289: " + "SEQ_PAPN_GENERAL_INFO " + "sequence does not exist");
                     ex.printStackTrace();
-                }else{
+                } else {
                     LOG.error("Integration du manifeste a recontre un probleme [" + ex.getSQLState() + "] " + ex.getMessage());
                 }
             }
@@ -256,7 +258,10 @@ public class PersistObject {
 //                insertGen.setInt(1, id_gen);
                     CNX.setAutoCommit(false);
 
-                    for (Awmds.BolSegment bol : cargo.getBolSegment()) {
+                    for (Awmds.BolSegment bol : cargo.getBolSegment().stream().filter(
+                            bl -> (bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
+                            || (bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
+                    ).collect(Collectors.toList())) {
                         updateBol.setString(1, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt));
                         updateBol.setString(2, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt));
                         updateBol.setString(3, bol.getBolId().getBolReference());
