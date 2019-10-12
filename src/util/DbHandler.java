@@ -1,4 +1,4 @@
-package dao;
+package util;
 
 import static util.Const.LOG;
 import static util.Const.PROPERTIES;

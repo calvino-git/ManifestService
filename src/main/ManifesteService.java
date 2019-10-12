@@ -13,17 +13,15 @@ import static util.PersistObject.manifestToDB;
 import util.FtpClient;
 import util.PortDestination;
 import static util.XmlObject.AwmdsToXml;
-import dao.DbHandler;
+import util.DbHandler;
 import dao.Escale;
 import model.GeneralInfo;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,17 +32,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import model.BillOfLanding;
 import model.Container;
-import controller.BillOfLandingJpaController;
-import controller.ContainerJpaController;
 import controller.EscaleJpaController;
-import controller.GeneralInfoJpaController;
 import exception.IllegalOrphanException;
 import exception.NonexistentEntityException;
 import net.sf.jasperreports.engine.JRException;
@@ -75,7 +67,6 @@ public class ManifesteService {
     private static JasperReport jasperManiReport;
     private static FileWriter fileWriter = null;
     private static final FTPClient FTP = new FTPClient();
-    private static Connection connection;
     private static File jrprint;
     static ObjectFactory obj = new ObjectFactory();
 
@@ -122,10 +113,8 @@ public class ManifesteService {
                     if (manifest != null && mois) {
                         destXmlManifest = ManifestMethods.renameManifest(manifest, manifestFile.getName());
 
-                        LOG.info("Formatage du nom terminé.");
-
                         if (destXmlManifest != null) {
-                            LOG.info(destXmlManifest[0]);
+                            LOG.info("======" + destXmlManifest[0] + "=====");
                             destPdfManifest[0] = destXmlManifest[0].substring(0, destXmlManifest[0].length() - 4) + ".pdf";
                             destPdfManifest[1] = destXmlManifest[1].substring(0, destXmlManifest[1].length() - 4) + ".pdf";
                             destXmlManifestFile[0] = new File(destXmlManifest[0]);
@@ -135,38 +124,9 @@ public class ManifesteService {
 
                             LOG.info("============ DEBUT TRATITEMENT  ============");
 
-//                            LOG.info("Nouveau ");
-//                            ManifestMethods.AwmdsToXml(manifest, destXmlManifestFile[0]);
-//                            LOG.info(" Manifest classé : " + destXmlManifest[0]);
-//                    try {
-//                        fileWriter = new FileWriter(destXmlManifestFile);
-//                        fileWriter.flush();
-//                        fileWriter.close();
-//                    } catch (IOException ex) {
-//                        LOG.error(ex.getLocalizedMessage());
-//                    }
-                            try {
-                                Class.forName(CARGO_DRIVER);
-                            } catch (ClassNotFoundException ex) {
-                                LOG.error(ex.getMessage());
-                            }
-                            try {
-                                connection = DriverManager.getConnection(CARGO_FULL_URL, CARGO_USER, CARGO_PASSWORD);
-                                LOG.info("===> CONNECTION :" + !connection.isClosed());
-                            } catch (SQLException ex) {
-                                LOG.error(ex.getMessage());
-                            }
-
-                            try {
                                 id_manifest = persistenceXML(manifest, destXmlManifestFile[0]);
 //                                Awmds manif = getManifeste(id_manifest);
 //                                AwmdsToXml(manif, destXmlManifestFile[0]);
-                            } catch (SQLException ex) {
-                                LOG.error("Quelque chose a mal tourne du cote de la DB");
-//                                manifestFile.renameTo(new File(Config.PROPERTIES.getString("dossier.manifest.err") + manifestFile.getName()));
-//                                manifestFile.delete();
-                                continue;
-                            }
                             try {
                                 generationPDF(id_manifest, destXmlManifestFile[0], destPdfManifestFile[0]);
                             } catch (JRException | SQLException | IOException ex) {
@@ -224,9 +184,9 @@ public class ManifesteService {
 
     public static void allManifest() {
         try {
-            connection = DbHandler.getDbConnection();
+            CNX = DbHandler.getDbConnection();
             String query = "select id from general_info";
-            Statement stmt = connection.createStatement();
+            Statement stmt = CNX.createStatement();
             stmt.execute(query);
             ResultSet list = stmt.getResultSet();
             while (list.next()) {
@@ -282,11 +242,11 @@ public class ManifesteService {
         }
 
         // Load the JDBC driver
-        if (connection == null) {
+        if (CNX == null) {
             try {
                 LOG.info("=======================================");
                 LOG.info("========> CONNEXION A CARGO DB <=======");
-                connection = DriverManager.getConnection(CARGO_FULL_URL, CARGO_USER, CARGO_PASSWORD);
+                CNX = DriverManager.getConnection(CARGO_FULL_URL, CARGO_USER, CARGO_PASSWORD);
                 LOG.info("=========> CONNEXION ETABLIE <=========");
                 LOG.info("=======================================");
             } catch (SQLException ex) {
@@ -315,7 +275,7 @@ public class ManifesteService {
         LOG.info("====>DEBUT RENDU JASPER to JRPRINT<====");
         jrprint = new File(getReportFilename() + ".jrprint");
         try {
-            JasperFillManager.fillReportToFile(jasperManiReport, jrprint.getAbsolutePath(), reportParameters, connection);
+            JasperFillManager.fillReportToFile(jasperManiReport, jrprint.getAbsolutePath(), reportParameters, CNX);
             LOG.info("=====>FIN RENDU JASPER to JRPRINT<=====");
             LOG.info("=======================================");
         } catch (JRException ex) {
@@ -338,8 +298,8 @@ public class ManifesteService {
             }
             throw e;
         }
-        connection.close();
-        if (connection.isClosed()) {
+        CNX.close();
+        if (CNX.isClosed()) {
             LOG.info("DB deconnecté.");
         }
     }
@@ -374,13 +334,16 @@ public class ManifesteService {
         gi.getBillOfLandingCollection().forEach(bl -> {
             bl.getContainerCollection().forEach(ct -> {
                 deleteCT(ct.getIdCtn());
+
             });
             deleteBL(bl.getIdBol());
+            System.out.print("=");
         });
         deleteGI(id);
+        System.out.println("=");
     }
 
-    public static int persistenceXML(Awmds awmds, File xmlFile) throws SQLException {
+    public static int persistenceXML(Awmds awmds, File xmlFile) {
         int id = 0;
         LOG.info("=======================================");
         LOG.info("===========>DEBUT PERSISTENCE XML<===========");
@@ -395,12 +358,6 @@ public class ManifesteService {
                 }
             } catch (NullPointerException ex) {
                 LOG.error("Un element null : " + ex.getLocalizedMessage());
-//                if (bol.getBolId().getBolReference() != null) {
-//                    LOG.info("BOL : " + bol.getBolId().getBolReference());
-//                }
-//                if (bol.getBolId().getBolReference() == null && bol.getBolId().getBolNature() == null) {
-//                    LOG.info("BOL : " + bol.getBolId().getBolReference() + " SUPPRIME.");
-//                    awmds.getBolSegment().remove(bol);
 //                }
             }
         });
@@ -420,22 +377,19 @@ public class ManifesteService {
         if (!mois.equals(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE).substring(0, 6))) {
             LOG.info("===> Recherche dans le fichier de CONGO TERMINAL : " + mois);
             int nbrManifestDeleted = deleteOnExistsManifest(awmds);
-            LOG.info("Nombre de manifestes existants supprimes : " + nbrManifestDeleted);
+            LOG.info("Nombre de manifestes existants : " + nbrManifestDeleted);
+
             if (id == 0) {
-                try {
 //                    String arrival = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfArrival();
 //                    String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture();
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival("2019-07-01");
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture("2019-07-31");
-                    PortDestination.searchPortTRB(awmds);
+                PortDestination.searchPortTRB(awmds);
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
-                    int nbrBolUpdated = PersistObject.updateBolPort(awmds, escale);
-                    LOG.info("BOLs MIS A JOUR : " + nbrBolUpdated);
-                    id = manifestToDB(awmds, escale);// after stored in db, the pk id of the current manifest is returned
-
-                } catch (SQLException ex) {
-                    LOG.error("Integration du manifeste a recontre un probleme [" + ex.getSQLState() + "] " + ex.getMessage());
+                id = PersistObject.updateBolPort(awmds, escale);
+                if (id == 0) {
+                    id = manifestToDB(awmds, escale);
                 }
             } else {
 //                String arrival = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfArrival();
@@ -445,22 +399,19 @@ public class ManifesteService {
                 PortDestination.searchPortTRB(awmds);
 //                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
 //                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
-                int nbrBolUpdated = PersistObject.updateBolPort(awmds, escale);
-                LOG.info("BOLs MIS A JOUR : " + nbrBolUpdated);
-                id = manifestToDB(awmds, escale);
+                id = PersistObject.updateBolPort(awmds, escale);
+                if (id == 0) {
+                    id = manifestToDB(awmds, escale);
+                }
             }
         } else {
             LOG.info("===> Mois en cours " + mois);
             int nbrManifestDeleted = deleteOnExistsManifest(awmds);
-            LOG.info("Nombre de manifestes existants supprimes : " + nbrManifestDeleted);
-            if (id == 0) {
-                try {
-                    int nbrBolUpdated = PersistObject.updateBolPort(awmds, escale);
-                    LOG.info("BOLs MIS A JOUR : " + nbrBolUpdated );
-                    id = manifestToDB(awmds, escale);// after stored in db, the pk id of the current manifest is returned
-                } catch (SQLException ex) {
-                    LOG.error("Integration du manifeste a recontre un probleme [" + ex.getSQLState() + "] " + ex.getMessage());
-                }
+            LOG.info("Nombre de manifestes existants  : " + nbrManifestDeleted);
+            if (nbrManifestDeleted == 0) {
+                    id = manifestToDB(awmds, escale);
+            } else {
+                id = PersistObject.existsManifeste(awmds);
             }
         }
         LOG.info("===> Enregistrement du nouveau XML traité");
@@ -472,15 +423,15 @@ public class ManifesteService {
     }
 
     public static String getETB(String numero) throws SQLException {
-        connection = DbHandler.getDbConnection();
+        CNX = DbHandler.getDbConnection();
         List<Escale> data = new ArrayList();
         queryString = "SELECT la_ligne  "
                 + "FROM escales_douanes_papn  "
                 + "WHERE substr(nom_fichier,11,10) like ?  ";
         String laligne = "";
-        if (connection != null) {
+        if (CNX != null) {
             LOG.info("DB connected");
-            PreparedStatement pst = connection.prepareStatement(queryString);
+            PreparedStatement pst = CNX.prepareStatement(queryString);
             LOG.info("********************************************");
 
             pst.setString(1, numero);
@@ -492,7 +443,7 @@ public class ManifesteService {
 //            LOG.info("********************************************");
 //            LOG.info(laligne);
 //            LOG.info("********************************************");
-            connection.close();
+            CNX.close();
             LOG.info("********************************************");
         }
         return laligne;
@@ -500,9 +451,9 @@ public class ManifesteService {
 
     private static Awmds getManifeste(int id_manifest) {
         Awmds man = new Awmds();
-        connection = DbHandler.getDbConnection();
+        CNX = DbHandler.getDbConnection();
         try {
-            Statement stmt = connection.createStatement();
+            Statement stmt = CNX.createStatement();
             GeneralInfo gen = GIJC.findGeneralInfo(id_manifest);
             Awmds.GeneralSegment sg = xtractSegmentGeneral(gen, stmt);
             man.setGeneralSegment(sg);
@@ -523,10 +474,10 @@ public class ManifesteService {
     }
 
     private static int deleteOnExistsManifest(Awmds awmds) {
-        connection = DbHandler.getDbConnection();
+        CNX = DbHandler.getDbConnection();
         int i = 0;
         try {
-            ResultSet rst = connection.createStatement().executeQuery("select id from general_info where "
+            ResultSet rst = CNX.createStatement().executeQuery("select id from general_info where "
                     + "CUSTOMS_OFFICE_CODE like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
                     + "' and VOYAGE_NUMBER like '"
@@ -536,9 +487,9 @@ public class ManifesteService {
                     + "'");
             while (rst.next()) {
                 int id = rst.getInt("id");
-                deleteManifeste(id);
+//                deleteManifeste(id);
                 i++;
-                LOG.info("Manifest supprime N°" + id);
+                LOG.info("Manifest trouvé N°" + id);
             }
         } catch (SQLException ex) {
             Logger.getLogger(ManifesteService.class.getName()).log(Level.SEVERE, null, ex);

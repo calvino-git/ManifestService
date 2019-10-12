@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Const {
 
-    public static Connection connection = null;
-    public static final ResourceBundle PROPERTIES = ResourceBundle.getBundle("config.__config");
+    public static Connection CNX = null;
+    public static final ResourceBundle PROPERTIES = ResourceBundle.getBundle("config.config");
     public static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
     public static final String PRE_MAN_EXP = "Manifest";
     public static final String PRE_MAN_IMP = "Manifest";

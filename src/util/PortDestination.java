@@ -72,6 +72,7 @@ public class PortDestination {
                                         if ((!ctnr.getPol().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
                                             if (ctnr.getPol()!=null && (!ctnr.getPol().isEmpty())) {
                                                 bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getPol());
+                                                
                                                 isFound = true;
                                             }
                                         }

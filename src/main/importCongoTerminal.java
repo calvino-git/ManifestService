@@ -7,7 +7,7 @@ package main;
 
 import static util.Const.LOG;
 import static util.Const.QUERY_CT;
-import dao.DbHandler;
+import util.DbHandler;
 import model.CongoTerminal;
 import java.io.File;
 import java.io.IOException;

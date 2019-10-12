@@ -7,7 +7,6 @@ package util;
 
 import java.io.File;
 import asycuda.awmds.Awmds;
-import dao.DbHandler;
 import dao.Escale;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +23,7 @@ import static util.Const.LOG;
 import static util.Const.PROPERTIES;
 import static util.XmlObject.xmlToAwmds;
 import java.time.LocalTime;
-import static util.Const.connection;
+import static util.Const.CNX;
 
 /**
  *
@@ -100,7 +99,7 @@ public class ManifestMethods {
     }
 
     public static Escale searchEscaleForExport(Escale escaleCible) {
-        connection = DbHandler.getDbConnection();
+        CNX = DbHandler.getDbConnection();
 
         List<Escale> data = new ArrayList<>();
         String queryString = "SELECT escale.escleunik,  "
@@ -115,10 +114,10 @@ public class ManifestMethods {
                 + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),'\\W','') like ?  "
                 + "and to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
 
-        if (connection != null) {
+        if (CNX != null) {
             try {
                 LOG.info("===> Connexion à la base de donnnée avec succès.");
-                PreparedStatement pst = connection.prepareStatement(queryString);
+                PreparedStatement pst = CNX.prepareStatement(queryString);
                 LOG.info("********************************************");
 
                 String debut = dateFormater(escaleCible.getDateDepart()).minusDays(7).format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -138,7 +137,7 @@ public class ManifestMethods {
                 LOG.info("********************************************");
                 LOG.info("Nombre d'escales trouvés : " + data.size());
                 LOG.info("********************************************");
-                connection.close();
+                CNX.close();
                 if (data.isEmpty()) {
                     return escaleCible;
                 }
@@ -201,7 +200,7 @@ public class ManifestMethods {
     }
 
     public static Escale searchEscaleForImport(Escale escaleCible) {
-        connection = DbHandler.getDbConnection();
+        CNX = DbHandler.getDbConnection();
         List<Escale> data = new ArrayList<>();
         String queryString = "SELECT escale.escleunik,  "
                 + "escale.navire Navire,  "
@@ -215,10 +214,10 @@ public class ManifestMethods {
                 + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),' ','') like ?  "
                 + "and to_char(to_date(escale.DATE_PASSE_ENTREE,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
 
-        if (connection != null) {
+        if (CNX != null) {
             try {
                 LOG.info("===> Connexion à la base de donnnée avec succès.");
-                PreparedStatement pst = connection.prepareStatement(queryString);
+                PreparedStatement pst = CNX.prepareStatement(queryString);
                 LOG.info("********************************************");
 
                 String debut = dateFormater(escaleCible.getDateArrivee()).minusDays(3).format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -237,7 +236,7 @@ public class ManifestMethods {
                 LOG.info("********************************************");
                 LOG.info("Nombre d'escales trouvés : " + data.size());
                 LOG.info("********************************************");
-                connection.close();
+                CNX.close();
 
                 if (data.isEmpty()) {
                     return escaleCible;

@@ -7,7 +7,6 @@ package util;
 
 import asycuda.awmds.Awmds;
 import static util.Const.*;
-import dao.DbHandler;
 import dao.Escale;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,7 +45,7 @@ public class PersistObject {
         return portCode;
     }
 
-    public static int manifestToDB(Awmds cargo, Escale escale) throws SQLException {
+    public static int manifestToDB(Awmds cargo, Escale escale) {
         Statement id = null;
         ResultSet resultSet = null;
         int id_gen;
@@ -54,14 +53,14 @@ public class PersistObject {
         LOG.info("========> DEBUT INSERTION to DB <======");
 
         try {
-            connection = DbHandler.getDbConnection();
-            id = connection.createStatement();
-            Statement stmt = connection.createStatement();
+            CNX = DbHandler.getDbConnection();
+            id = CNX.createStatement();
+            Statement stmt = CNX.createStatement();
 
-            try (PreparedStatement insertGen = connection.prepareStatement(QUERY_SG)) {
+            try (PreparedStatement insertGen = CNX.prepareStatement(QUERY_SG)) {
 
 //                insertGen.setInt(1, id_gen);
-                connection.setAutoCommit(false);
+                CNX.setAutoCommit(false);
                 insertGen.setString(1, cargo.getGeneralSegment().getTransportInformation().getCarrier().getCarrierAddress());
                 insertGen.setString(2, cargo.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode());
                 insertGen.setString(3, cargo.getGeneralSegment().getTransportInformation().getCarrier().getCarrierName());
@@ -102,7 +101,7 @@ public class PersistObject {
             LOG.info("===> NOMBRE DE BOLs : " + cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfBols());
             LOG.info("===> NOMBRE DE CONTENEURS : " + cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfContainers());
 
-            try (PreparedStatement insertBol = connection.prepareStatement(QUERY_BOL)) {
+            try (PreparedStatement insertBol = CNX.prepareStatement(QUERY_BOL)) {
 
                 int i = 1;
 
@@ -154,7 +153,7 @@ public class PersistObject {
                         int id_bol = resultSet.getInt(1);
                         LOG.info("===> Bol N° " + i++ + " insere. ID = " + id_bol);
                         LOG.info("===> NOMBRE DE CONTENEURS " + bol.getGoodsSegment().getNumOfCtnForThisBol());
-                        try (PreparedStatement insertCtn = connection.prepareStatement(QUERY_CTN)) {
+                        try (PreparedStatement insertCtn = CNX.prepareStatement(QUERY_CTN)) {
 
                             int j = 1;
                             for (Awmds.BolSegment.CtnSegment ctn : bol.getCtnSegment()) {
@@ -202,7 +201,7 @@ public class PersistObject {
                     }
                 }
             }
-            connection.commit();
+            CNX.commit();
             LOG.info("========> FIN INSERTION to DB <======");
             LOG.info("=======================================");
 
@@ -213,6 +212,8 @@ public class PersistObject {
                 if (ex.getMessage().contains("ORA-02289")) {
                     LOG.error("ORA-02289: " + "SEQ_PAPN_GENERAL_INFO " + "sequence does not exist");
                     ex.printStackTrace();
+                }else{
+                    LOG.error("Integration du manifeste a recontre un probleme [" + ex.getSQLState() + "] " + ex.getMessage());
                 }
             }
             ex.printStackTrace();
@@ -220,10 +221,10 @@ public class PersistObject {
         return 0;
     }
 
-    private static int existsManifeste(Awmds awmds) {
-        connection = DbHandler.getDbConnection();
+    public static int existsManifeste(Awmds awmds) {
+        CNX = DbHandler.getDbConnection();
         try {
-            ResultSet rst = connection.createStatement().executeQuery("select id from general_info where "
+            ResultSet rst = CNX.createStatement().executeQuery("select id from general_info where "
                     + "CUSTOMS_OFFICE_CODE like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
                     + "' and VOYAGE_NUMBER like '"
@@ -231,7 +232,7 @@ public class PersistObject {
                     + "' and DATE_DEPARTURE like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture()
                     + "'");
-            while (rst.next()) {
+            if (rst.next()) {
                 return rst.getInt("id");
             }
         } catch (SQLException ex) {
@@ -240,21 +241,22 @@ public class PersistObject {
         return 0;
     }
 
-    public static int updateBolPort(Awmds cargo, Escale escale) throws SQLException {
+    public static int updateBolPort(Awmds cargo, Escale escale) {
         LOG.info("=======================================");
         LOG.info("========> UPDATE MANIFESTE <======");
         int i = 0;
         int id = existsManifeste(cargo);
-            connection = DbHandler.getDbConnection();
-            Statement stmt = connection.createStatement();
+        if (id != 0) {
+            try {
+                CNX = DbHandler.getDbConnection();
+                Statement stmt = CNX.createStatement();
 
-            try (PreparedStatement updateBol = connection.prepareStatement(QUERY_UPDATE_BOL)) {
+                try (PreparedStatement updateBol = CNX.prepareStatement(QUERY_UPDATE_BOL)) {
 
 //                insertGen.setInt(1, id_gen);
-                connection.setAutoCommit(false);
-                
-                for (Awmds.BolSegment bol : cargo.getBolSegment()) {
-                    try {
+                    CNX.setAutoCommit(false);
+
+                    for (Awmds.BolSegment bol : cargo.getBolSegment()) {
                         updateBol.setString(1, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt));
                         updateBol.setString(2, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt));
                         updateBol.setString(3, bol.getBolId().getBolReference());
@@ -262,30 +264,34 @@ public class PersistObject {
 
                         int test = updateBol.executeUpdate();
                         if (test == 1) {
-                            LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference() 
+                            LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference()
                                     + " " + bol.getLoadUnloadPlace().getPlaceOfLoadingCode() + "->"
-                                            + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()+ ": SUCCES.");
-                        }
-                        if (test == 0) {
+                                    + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode() + ": SUCCES.");
+                        } else if (test == 0) {
                             LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference() + " ECHOUE.");
+                        } else {
+                            LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference() + " = " + test);
                         }
-                        connection.commit();
+
+                        CNX.commit();
                         i++;
 
-                    } catch (SQLException ex) {
+                    }
+                }
+                LOG.info("=======================================");
+            } catch (SQLException ex) {
 //                        LOG.warn("BOL N° " + id_bol);
-                        if (ex instanceof java.sql.SQLSyntaxErrorException) {
-                            if (ex.getMessage().contains("ORA-02289")) {
-                                LOG.error("ORA-02289: " + "SEQ_PAPN_BILLOFLANDING " + "sequence does not exist");
-                                ex.printStackTrace();
-                            }
-                        }
+                if (ex instanceof java.sql.SQLSyntaxErrorException) {
+                    if (ex.getMessage().contains("ORA-02289")) {
+                        LOG.error("ORA-02289: " + "SEQ_PAPN_BILLOFLANDING " + "sequence does not exist");
                         ex.printStackTrace();
                     }
                 }
+                ex.printStackTrace();
             }
-            LOG.info("=======================================");
-        return i;
+        }
+        LOG.info("BOLs MIS A JOUR : " + i);
+        return id;
     }
 
     /**
