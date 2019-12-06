@@ -8,8 +8,10 @@
     <class>model.Container</class>
     <class>model.BillOfLanding</class>
     <class>model.CongoTerminal</class>
+    <class>model.TdrCongoTerminal</class>
+    <class>com.github.adminfaces.starter.model.TdrCongoTerminal_1</class>
     <properties>
-      <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@10.0.55.203:1521:cargo"/>
+      <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@10.0.55.203:1521:virtre"/>
       <property name="javax.persistence.jdbc.user" value="ppncargo"/>
       <property name="javax.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver"/>
       <property name="javax.persistence.jdbc.password" value="ppncargo"/>

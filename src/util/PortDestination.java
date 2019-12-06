@@ -9,6 +9,7 @@ import asycuda.awmds.Awmds;
 import static util.Const.LOG;
 import model.CongoTerminal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
@@ -26,21 +27,19 @@ public class PortDestination {
     private static LocalDate date;
     private static String dateFin;
     private static String dateDeb;
+    private static Integer mois;
 
     public static void searchPortTRB(Awmds manifest) {
         // TODO code application logic here
-        TypedQuery<CongoTerminal> query = manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equals("CGPNR")
-                ? EM.createQuery("SELECT c FROM CongoTerminal c WHERE c.numCtn = :numCtn and c.dateDep between :dateDeb and :dateFin", CongoTerminal.class)
-                : manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDestinationCode().equals("CGPNR")
-                ? EM.createQuery("SELECT c FROM CongoTerminal c WHERE c.numCtn = :numCtn and c.dateArr between :dateDeb and :dateFin", CongoTerminal.class)
-                : null;
+        TypedQuery<CongoTerminal> query = EM.createQuery("SELECT c FROM CongoTerminal c WHERE c.numCtn = :numCtn and c.mois=:mois", CongoTerminal.class);
 
         LOG.info("######### VOYAGE N° " + manifest.getGeneralSegment().getGeneralSegmentId().getVoyageNumber() + "###########");
 
         referenceTable ref = new referenceTable();
         int count = 0;
         for (Awmds.BolSegment bol : manifest.getBolSegment()
-                .stream().filter(bl -> bl.getBolId().getBolNature().equalsIgnoreCase("28") || bl.getBolId().getBolNature().equalsIgnoreCase("29"))
+                .stream().filter(bl -> (bl.getBolId().getBolNature().equalsIgnoreCase("28")&& bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR") ) 
+                        || (bl.getBolId().getBolNature().equalsIgnoreCase("29")&& bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR") ))
                 .collect(Collectors.toList())) {
             test = 0;
             LOG.info("##############################################################");
@@ -53,13 +52,14 @@ public class PortDestination {
 
             dateDeb = String.valueOf(date.minusDays(5)).replaceAll("-", "");
             dateFin = String.valueOf(date.plusDays(5)).replaceAll("-", "");
+            mois = Integer.valueOf(date.format(DateTimeFormatter.BASIC_ISO_DATE).substring(0, 6));
             test = 0;
             LOG.info("BL AVANT : POL / POD = " + bol.getBolId().getBolReference()
                                     + " : " + bol.getLoadUnloadPlace().getPlaceOfLoadingCode()
                                     + "/" + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode());
             for (Awmds.BolSegment.CtnSegment ctn : bol.getCtnSegment()) {
                 if (query != null) {
-                    listCtnr = query.setParameter("numCtn", ctn.getCtnReference()).setParameter("dateDeb", dateDeb).setParameter("dateFin", dateFin).getResultList();
+                    listCtnr = query.setParameter("numCtn", ctn.getCtnReference()).setParameter("mois", mois).getResultList();
                     LOG.info("Resultat de " + ctn.getCtnReference() + " : " + listCtnr.size());
                     if (!listCtnr.isEmpty()) {
                         boolean isFound = false;

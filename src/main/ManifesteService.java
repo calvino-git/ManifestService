@@ -124,7 +124,7 @@ public class ManifesteService {
 
                             LOG.info("============ DEBUT TRATITEMENT  ============");
 
-                                id_manifest = persistenceXML(manifest, destXmlManifestFile[0]);
+                            id_manifest = persistenceXML(manifest, destXmlManifestFile[0]);
 //                                Awmds manif = getManifeste(id_manifest);
 //                                AwmdsToXml(manif, destXmlManifestFile[0]);
                             try {
@@ -155,17 +155,22 @@ public class ManifesteService {
                                 LOG.info("==========> DEBUT DEPLACEMENT <========");
                                 LOG.info("===> Deplacement du contenu du dossier " + DOSSIER_MANIFEST_IN + " vers " + DOSSIER_MANIFEST_ARC);
                                 File target = null;
-                                if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equals("CGPNR")) {
+
+                                if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().startsWith("CGPN")) {
                                     target = new File(DOSSIER_MANIFEST_ARC + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 7));
                                 }
-                                if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDestinationCode().equals("CGPNR")) {
+                                if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDestinationCode().startsWith("CGPN")) {
                                     target = new File(DOSSIER_MANIFEST_ARC + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfArrival().substring(0, 7));
                                 }
 
                                 if (target != null) {
+                                    if (!target.exists()) {
+                                        Files.createDirectory(target.toPath());
+                                    }
                                     Files.move(manifestFile.toPath(), target.toPath().resolve(manifestFile.toPath().getFileName()), StandardCopyOption.REPLACE_EXISTING);
                                     LOG.info(target.getAbsolutePath() + "/" + manifestFile.toPath().getFileName() + " crée.");
                                 }
+
                                 LOG.info("===========> FIN DEPLACEMENT <=========");
                                 LOG.info("=======================================");
 
@@ -349,6 +354,12 @@ public class ManifesteService {
         LOG.info("===========>DEBUT PERSISTENCE XML<===========");
 
         awmds.getBolSegment().forEach(bol -> {
+            if (bol.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNP")) {
+                bol.getLoadUnloadPlace().setPlaceOfLoadingCode("CGPNR");
+            }
+            if (bol.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNP")) {
+                bol.getLoadUnloadPlace().setPlaceOfUnloadingCode("CGPNR");
+            }
             try {
                 bol.getLoadUnloadPlace().setPlaceOfLoadingCode(bol.getLoadUnloadPlace().getPlaceOfLoadingCode() == null ? "CGPNR" : bol.getLoadUnloadPlace().getPlaceOfLoadingCode());
                 bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode() == null ? "CGPNR" : bol.getLoadUnloadPlace().getPlaceOfUnloadingCode());
@@ -376,42 +387,28 @@ public class ManifesteService {
         Escale escale = new Escale("", "", "", "", trim[4], Integer.valueOf(trim[3]), "");
         if (!mois.equals(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE).substring(0, 6))) {
             LOG.info("===> Recherche dans le fichier de CONGO TERMINAL : " + mois);
-            int nbrManifestDeleted = deleteOnExistsManifest(awmds);
+            int[] r = deleteOnExistsManifest(awmds);
+            id = r[1];
+            int nbrManifestDeleted = r[0];
             LOG.info("Nombre de manifestes existants : " + nbrManifestDeleted);
 
-            if (id == 0) {
 //                    String arrival = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfArrival();
 //                    String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture();
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival("2019-07-01");
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture("2019-07-31");
-                PortDestination.searchPortTRB(awmds);
+            PortDestination.searchPortTRB(awmds);
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
 //                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
-                id = PersistObject.updateBolPort(awmds, escale);
-                if (id == 0) {
-                    id = manifestToDB(awmds, escale);
-                }
-            } else {
-//                String arrival = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfArrival();
-//                String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture();
-//                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival("2019-07-01");
-//                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture("2019-08-30");
-                PortDestination.searchPortTRB(awmds);
-//                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
-//                awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
-                id = PersistObject.updateBolPort(awmds, escale);
-                if (id == 0) {
-                    id = manifestToDB(awmds, escale);
-                }
+            id = PersistObject.updateBolPort(awmds, escale, id);
+            if (id == 0) {
+                id = manifestToDB(awmds, escale);
             }
         } else {
             LOG.info("===> Mois en cours " + mois);
-            int nbrManifestDeleted = deleteOnExistsManifest(awmds);
-            LOG.info("Nombre de manifestes existants  : " + nbrManifestDeleted);
-            if (nbrManifestDeleted == 0) {
-                    id = manifestToDB(awmds, escale);
-            } else {
-                id = PersistObject.existsManifeste(awmds);
+            id = PersistObject.existsManifeste(awmds);
+            LOG.info("Manifeste existant  : " + id);
+            if (id == 0) {
+                id = manifestToDB(awmds, escale);
             }
         }
         LOG.info("===> Enregistrement du nouveau XML traité");
@@ -473,28 +470,37 @@ public class ManifesteService {
         }
     }
 
-    private static int deleteOnExistsManifest(Awmds awmds) {
+    private static int[] deleteOnExistsManifest(Awmds awmds) {
+        int[] r = new int[2];
         CNX = DbHandler.getDbConnection();
+        String query = "select id from general_info where "
+                + "CUSTOMS_OFFICE_CODE like '"
+                + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
+                + "' and VOYAGE_NUMBER like '"
+                + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
+                + "' and DATE_DEPARTURE like '"
+                + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture()
+                + "'";
         int i = 0;
-        try {
-            ResultSet rst = CNX.createStatement().executeQuery("select id from general_info where "
-                    + "CUSTOMS_OFFICE_CODE like '"
-                    + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
-                    + "' and VOYAGE_NUMBER like '"
-                    + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
-                    + "' and DATE_DEPARTURE like '"
-                    + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture()
-                    + "'");
+        int id = 0;
+        try (Statement stmt = CNX.createStatement()) {
+            ResultSet rst = stmt.executeQuery(query);
             while (rst.next()) {
-                int id = rst.getInt("id");
-//                deleteManifeste(id);
+                if (i == 0) {
+                    id = rst.getInt("id");
+                } else {
+                    int idx = rst.getInt("id");
+                    deleteManifeste(idx);
+                }
                 i++;
-                LOG.info("Manifest trouvé N°" + id);
             }
+            System.out.println(i);
         } catch (SQLException ex) {
             Logger.getLogger(ManifesteService.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return i;
+        r[0] = i;
+        r[1] = id;
+        return r;
     }
 
     public JasperPrint getJasperPrint() {

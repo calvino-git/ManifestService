@@ -124,8 +124,8 @@ public class ManifestMethods {
                 PreparedStatement pst = CNX.prepareStatement(queryString);
                 LOG.info("********************************************");
 
-                String debut = dateFormater(escaleCible.getDateDepart()).minusDays(7).format(DateTimeFormatter.BASIC_ISO_DATE);
-                String fin = dateFormater(escaleCible.getDateDepart()).plusDays(7).format(DateTimeFormatter.BASIC_ISO_DATE);
+                String debut = dateFormater(escaleCible.getDateDepart()).minusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
+                String fin = dateFormater(escaleCible.getDateDepart()).plusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
 
                 LOG.info("Recherche des escales probable du navire " + escaleCible.getNavire().replace("-", " ").replace(" ", "")
                         + " sur la période du " + debut + " au " + fin);
@@ -148,8 +148,6 @@ public class ManifestMethods {
 
                 if (data.size() == 1) {
                     data.forEach(esc -> {
-
-                        if (esc.getNavire().contains(escaleCible.getNavire())) {
                             LOG.info("Navire : " + esc.getNavire() + " | " + escaleCible.getNavire());
                             LOG.info("Voyage : " + esc.getVoyage() + " | " + escaleCible.getVoyage());
                             LOG.info("Date départ : " + esc.getDateDepart() + " | " + escaleCible.getDateDepart());
@@ -160,7 +158,6 @@ public class ManifestMethods {
                             escaleCible.setNumero(esc.getNumero());
                             escaleCible.setDateArrivee(esc.getDateDepart());
                             escaleCible.setDateDepart(esc.getDateDepart());
-                        }
                         LOG.info("********************************************");
                     });
                 } else {
@@ -224,8 +221,8 @@ public class ManifestMethods {
                 PreparedStatement pst = CNX.prepareStatement(queryString);
                 LOG.info("********************************************");
 
-                String debut = dateFormater(escaleCible.getDateArrivee()).minusDays(3).format(DateTimeFormatter.BASIC_ISO_DATE);
-                String fin = dateFormater(escaleCible.getDateArrivee()).plusDays(3).format(DateTimeFormatter.BASIC_ISO_DATE);
+                String debut = dateFormater(escaleCible.getDateArrivee()).minusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
+                String fin = dateFormater(escaleCible.getDateArrivee()).plusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
 
                 LOG.info("Recherche des escales probable du navire " + escaleCible.getNavire().replace("-", " ").replace(" ", "")
                         + " sur la période du " + debut + " au " + fin);
@@ -248,8 +245,6 @@ public class ManifestMethods {
 
                 if (data.size() == 1) {
                     data.forEach(esc -> {
-
-                        if (esc.getNavire().contains(escaleCible.getNavire())) {
                             LOG.info("Navire :" + esc.getNavire() + "/ " + escaleCible.getNavire());
                             LOG.info("Voyage :" + esc.getVoyage() + "/ " + escaleCible.getVoyage());
                             LOG.info("Date Arrivée :" + esc.getDateArrivee() + "/ " + escaleCible.getDateArrivee());
@@ -259,7 +254,6 @@ public class ManifestMethods {
                             escaleCible.setNumero(esc.getNumero());
                             escaleCible.setDateArrivee(esc.getDateDepart());
                             escaleCible.setDateDepart(esc.getDateDepart());
-                        }
                         LOG.info("********************************************");
                     });
                 } else {

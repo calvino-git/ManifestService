@@ -24,7 +24,7 @@ public class DbHandler {
         String dbname = PROPERTIES.getString("cargo.sid");
         String user = PROPERTIES.getString("cargo.user");
         String password = PROPERTIES.getString("cargo.password");
-        final String ConnectionString = PROPERTIES.getString("cargo.url") + host + ":" + port + ":" + dbname;
+        final String ConnectionString = PROPERTIES.getString("cargo.fullurl");
         try {
             Class.forName(PROPERTIES.getString("cargo.driver"));
         } catch (ClassNotFoundException e) {

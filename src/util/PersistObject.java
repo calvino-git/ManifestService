@@ -52,7 +52,7 @@ public class PersistObject {
         ResultSet resultSet = null;
         int id_gen;
         LOG.info("=======================================");
-        LOG.info("========> DEBUT INSERTION to DB <======");
+        LOG.info("========> DEBUT - INSERTION DANS LA BASE DE DONNEE <======");
 
         try {
             CNX = DbHandler.getDbConnection();
@@ -94,18 +94,11 @@ public class PersistObject {
                 insertGen.setInt(28, escale.getEscleunik());
 
                 insertGen.executeUpdate();
-
             }
-            resultSet = id.executeQuery(SEQ_SG);
-            resultSet.next();
-            id_gen = resultSet.getInt(1);
-            LOG.info("===> SEGMENT GENERAL insere avec succes id = " + id_gen);
-            LOG.info("===> NOMBRE DE BOLs : " + cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfBols());
-            LOG.info("===> NOMBRE DE CONTENEURS : " + cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfContainers());
 
+            int i = 0;
+            int j = 0;
             try (PreparedStatement insertBol = CNX.prepareStatement(QUERY_BOL)) {
-
-                int i = 1;
 
                 for (Awmds.BolSegment bol : cargo.getBolSegment()) {
                     try {
@@ -148,16 +141,16 @@ public class PersistObject {
                         insertBol.setString(35, bol.getBolId().getUniqueCarrierReference());
                         insertBol.setDouble(36, bol.getGoodsSegment().getVolumeInCubicMeters() == null ? 0.0 : bol.getGoodsSegment().getVolumeInCubicMeters());
 
-                        insertBol.executeUpdate();
+                        if (insertBol.executeUpdate() > 0) {
+                            i++;
+                        }
 
-                        resultSet = id.executeQuery(SEQ_BOL);
-                        resultSet.next();
-                        int id_bol = resultSet.getInt(1);
-                        LOG.info("===> Bol N° " + i++ + " insere. ID = " + id_bol);
-                        LOG.info("===> NOMBRE DE CONTENEURS " + bol.getGoodsSegment().getNumOfCtnForThisBol());
+//                        resultSet = id.executeQuery(SEQ_BOL);
+//                        resultSet.next();
+//                        int id_bol = resultSet.getInt(1);
+//                        LOG.info("===> Bol N° " + i++ + " insere. ID = " + id_bol);
+//                        LOG.info("===> NOMBRE DE CONTENEURS " + bol.getGoodsSegment().getNumOfCtnForThisBol());
                         try (PreparedStatement insertCtn = CNX.prepareStatement(QUERY_CTN)) {
-
-                            int j = 1;
                             for (Awmds.BolSegment.CtnSegment ctn : bol.getCtnSegment()) {
                                 try {
 //                                    insertCtn.setInt(1, ++id_ctn);
@@ -173,12 +166,14 @@ public class PersistObject {
                                     insertCtn.setString(9, ctn.getSealingParty());
                                     insertCtn.setString(10, ctn.getTypeOfContainer());
 
-                                    insertCtn.executeUpdate();
-                                    resultSet = id.executeQuery(SEQ_CTN);
-                                    resultSet.next();
-                                    int id_ctn = resultSet.getInt(1);
-                                    LOG.info("=> Conteneur N° " + j++ + " insere. ID = " + id_ctn);
-                                    LOG.info("=> NOMBRE DE COLIS " + ctn.getNumberOfPackages());
+                                    if (insertCtn.executeUpdate() > 0) {
+                                        j++;
+                                    }
+//                                    resultSet = id.executeQuery(SEQ_CTN);
+//                                    resultSet.next();
+//                                    int id_ctn = resultSet.getInt(1);
+//                                    LOG.info("=> Conteneur N° " + j++ + " insere. ID = " + id_ctn);
+//                                    LOG.info("=> NOMBRE DE COLIS " + ctn.getNumberOfPackages());
                                 } catch (SQLException ex) {
 //                                    LOG.warn("CONTENEUR N° " + id_ctn);
                                     if (ex instanceof java.sql.SQLSyntaxErrorException) {
@@ -203,8 +198,15 @@ public class PersistObject {
                     }
                 }
             }
+            resultSet = id.executeQuery(SEQ_SG);
+            resultSet.next();
+            id_gen = resultSet.getInt(1);
+            LOG.info("===> SEGMENT GENERAL insere avec succes id = " + id_gen);
+            LOG.info("===> NOMBRE DE BOLs : " + i + "/" + cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfBols());
+            LOG.info("===> NOMBRE DE CONTENEURS : " + j + "/" + cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfContainers());
+
             CNX.commit();
-            LOG.info("========> FIN INSERTION to DB <======");
+            LOG.info("========> FIN - INSERTION DANS LA BASE DE DONNEE <======");
             LOG.info("=======================================");
 
             return id_gen;
@@ -226,7 +228,7 @@ public class PersistObject {
     public static int existsManifeste(Awmds awmds) {
         CNX = DbHandler.getDbConnection();
         try {
-            ResultSet rst = CNX.createStatement().executeQuery("select id from general_info where "
+            ResultSet rst = CNX.createStatement().executeQuery("select id,id_escale from general_info where "
                     + "CUSTOMS_OFFICE_CODE like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
                     + "' and VOYAGE_NUMBER like '"
@@ -243,25 +245,35 @@ public class PersistObject {
         return 0;
     }
 
-    public static int updateBolPort(Awmds cargo, Escale escale) {
+    public static int updateBolPort(Awmds cargo, Escale escale, int id) {
         LOG.info("=======================================");
-        LOG.info("========> UPDATE MANIFESTE <======");
+        LOG.info("========> DEBUT - MIS A JOUR DES PORTS DANS LA BASE DE DONNEE <======");
         int i = 0;
-        int id = existsManifeste(cargo);
+        if (id == 0) {
+            id = existsManifeste(cargo);
+        }
         if (id != 0) {
             try {
                 CNX = DbHandler.getDbConnection();
                 Statement stmt = CNX.createStatement();
+                try (PreparedStatement updateGi = CNX.prepareStatement("update general_info set id_escale =?, numero_escale=? where id=?")) {
+                    updateGi.setInt(1, escale.getEscleunik());
+                    updateGi.setString(2, escale.getNumero());
+                    updateGi.setInt(3, id);
 
-                try (PreparedStatement updateBol = CNX.prepareStatement(QUERY_UPDATE_BOL)) {
+                    if (updateGi.executeUpdate() == 1) {
+                        LOG.info("Escale du manifeste id : " + id + " mis à jour avec numero d'escale " + escale.getNumero());
+                    };
+                }
 
 //                insertGen.setInt(1, id_gen);
-                    CNX.setAutoCommit(false);
+                CNX.setAutoCommit(false);
 
-                    for (Awmds.BolSegment bol : cargo.getBolSegment().stream().filter(
-                            bl -> (bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
-                            || (bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
-                    ).collect(Collectors.toList())) {
+                for (Awmds.BolSegment bol : cargo.getBolSegment().stream().filter(
+                        bl -> (bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
+                        || (bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
+                ).collect(Collectors.toList())) {
+                    try (PreparedStatement updateBol = CNX.prepareStatement(QUERY_UPDATE_BOL)) {
                         updateBol.setString(1, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt));
                         updateBol.setString(2, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt));
                         updateBol.setString(3, bol.getBolId().getBolReference());
@@ -277,13 +289,11 @@ public class PersistObject {
                         } else {
                             LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference() + " = " + test);
                         }
-
-                        CNX.commit();
                         i++;
-
                     }
                 }
-                LOG.info("=======================================");
+                CNX.commit();
+                LOG.info("========> FIN- MIS A JOUR DES PORTS DANS LA BASE DE DONNEE AVCE BOLs MIS A JOUR :" + i + "<======");
             } catch (SQLException ex) {
 //                        LOG.warn("BOL N° " + id_bol);
                 if (ex instanceof java.sql.SQLSyntaxErrorException) {
