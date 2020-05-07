@@ -87,14 +87,14 @@ public class ManifesteService {
         File listManifest = new File(DOSSIER_MANIFEST_IN);
         File[] destXmlManifestFile = new File[2], destPdfManifestFile = new File[2];
         while (true) {
-//            if (FtpClient.connect(FTP, false)) {
-////                LOG.info("CONNECTED : " + ftp.isConnected()) ;
-//                //Recuperation des manifestes s'ils existent
-//                FtpClient.listFTPFiles(FTP, DOSSIER_FTP_IN, DOSSIER_MANIFEST_IN, DOSSIER_FTP_ARC);
-//
-//                // deconnexion au FTP DOUANE
-//                FtpClient.disconnect(FTP);
-//            }
+            if (FtpClient.connect(FTP, false)) {
+//                LOG.info("CONNECTED : " + ftp.isConnected()) ;
+                //Recuperation des manifestes s'ils existent
+                FtpClient.listFTPFiles(FTP, DOSSIER_FTP_IN, DOSSIER_MANIFEST_IN, DOSSIER_FTP_ARC);
+
+                // deconnexion au FTP DOUANE
+                FtpClient.disconnect(FTP);
+            }
             boolean mois = false;
             if (listManifest.listFiles() != null && listManifest.listFiles().length > 0) {
                 for (File manifestFile : listManifest.listFiles()) {
