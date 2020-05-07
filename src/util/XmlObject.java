@@ -25,14 +25,16 @@ public class XmlObject {
     
     public static Awmds xmlToAwmds(File xmlFichier) {
         LOG.info("Chargement du fichier XML en objet AWMDS");
+        Awmds awmds = null;
         try {
             jc = JAXBContext.newInstance(Awmds.class);
             unmarshaller = jc.createUnmarshaller();
-            return (Awmds) unmarshaller.unmarshal(xmlFichier);
+            awmds = (Awmds) unmarshaller.unmarshal(xmlFichier);
         } catch (JAXBException ue) {
             LOG.error("Fichier XML non valide \n" + ue.getMessage());
+            ue.printStackTrace();
         }
-        return null;
+        return awmds;
     }
     public static void AwmdsToXml(Awmds awmds, File file) {
         try {

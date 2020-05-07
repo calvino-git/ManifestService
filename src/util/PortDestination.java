@@ -65,24 +65,30 @@ public class PortDestination {
                         boolean isFound = false;
                         for (CongoTerminal ctnr : listCtnr) {
                             if (bol.getLoadUnloadPlace().getPlaceOfLoadingCode().equals("CGPNR") && ctnr.getTrafic().equals("T") && ctnr.getPol() != null) {
-                                if ((!ctnr.getPol().equals("CGPNR"))) {
+                                if ((ctnr.getPol()!=null && !ctnr.getPol().isEmpty() && !ctnr.getPol().equals("CGPNR"))) {
                                     if ((!ctnr.getPol().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
-                                        if (ctnr.getPol() != null && (!ctnr.getPol().isEmpty())) {
                                             bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getPol());
                                             isFound = true;
-                                        }
+                                    }
+                                }else if((ctnr.getOpl()!=null && !ctnr.getOpl().isEmpty() && !ctnr.getOpl().equals("CGPNR"))){
+                                    if ((!ctnr.getOpl().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
+                                            bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getOpl());
+                                            isFound = true;
                                     }
                                 }
                             } else if (bol.getLoadUnloadPlace().getPlaceOfUnloadingCode().equals("CGPNR") && ctnr.getTrafic().equals("T") && ctnr.getPol() != null) {
-
-                                if ((!ctnr.getPod().equals("CGPNR"))) {
+                                if ((ctnr.getPod()!=null && (!ctnr.getPod().isEmpty()) && !ctnr.getPod().equals("CGPNR"))) {
                                     if ((!ctnr.getPod().equals(bol.getLoadUnloadPlace().getPlaceOfLoadingCode()))) {
                                         if (ctnr.getPod() != null && (!ctnr.getPod().isEmpty())) {
                                             bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(ctnr.getPod());
                                             isFound = true;
                                         }
                                     }
-
+                                }else if ((ctnr.getPdesf()!=null && (!ctnr.getPdesf().isEmpty()) && !ctnr.getPdesf().equals("CGPNR"))) {
+                                    if ((!ctnr.getPdesf().equals(bol.getLoadUnloadPlace().getPlaceOfLoadingCode()))) {
+                                            bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(ctnr.getPdesf());
+                                            isFound = true;
+                                    }
                                 }
                             } else {
                                 LOG.info("BL  N° " + ctnr.getNumCtn() + " CORRECT");

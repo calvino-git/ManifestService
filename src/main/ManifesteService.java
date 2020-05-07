@@ -87,14 +87,14 @@ public class ManifesteService {
         File listManifest = new File(DOSSIER_MANIFEST_IN);
         File[] destXmlManifestFile = new File[2], destPdfManifestFile = new File[2];
         while (true) {
-            if (FtpClient.connect(FTP, false)) {
-//                LOG.info("CONNECTED : " + ftp.isConnected()) ;
-                //Recuperation des manifestes s'ils existent
-                FtpClient.listFTPFiles(FTP, DOSSIER_FTP_IN, DOSSIER_MANIFEST_IN, DOSSIER_FTP_ARC);
-
-                // deconnexion au FTP DOUANE
-                FtpClient.disconnect(FTP);
-            }
+//            if (FtpClient.connect(FTP, false)) {
+////                LOG.info("CONNECTED : " + ftp.isConnected()) ;
+//                //Recuperation des manifestes s'ils existent
+//                FtpClient.listFTPFiles(FTP, DOSSIER_FTP_IN, DOSSIER_MANIFEST_IN, DOSSIER_FTP_ARC);
+//
+//                // deconnexion au FTP DOUANE
+//                FtpClient.disconnect(FTP);
+//            }
             boolean mois = false;
             if (listManifest.listFiles() != null && listManifest.listFiles().length > 0) {
                 for (File manifestFile : listManifest.listFiles()) {
@@ -479,20 +479,22 @@ public class ManifesteService {
                 + "' and VOYAGE_NUMBER like '"
                 + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                 + "' and DATE_DEPARTURE like '"
-                + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture()
-                + "'";
+                + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 10)
+                + "' order by id desc";
         int i = 0;
         int id = 0;
+        int idx = 0;
         try (Statement stmt = CNX.createStatement()) {
             ResultSet rst = stmt.executeQuery(query);
             while (rst.next()) {
                 if (i == 0) {
                     id = rst.getInt("id");
                 } else {
-                    int idx = rst.getInt("id");
+                    idx = rst.getInt("id");
                     deleteManifeste(idx);
                 }
                 i++;
+                System.out.println("id := " + idx);
             }
             System.out.println(i);
         } catch (SQLException ex) {

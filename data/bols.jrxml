@@ -51,10 +51,11 @@
      BILL_OF_LANDING.Gross_mass AS Gross_mass,
      BILL_OF_LANDING.Notify_name AS Notify_name,
      BILL_OF_LANDING.Notify_address AS Notify_address,
-	 BILL_OF_LANDING.Exporter_name AS Exporter_name,
+     BILL_OF_LANDING.Exporter_name AS Exporter_name,
      BILL_OF_LANDING.Exporter_address AS Exporter_address,
      BILL_OF_LANDING.Consignee_name AS Consignee_name,
      BILL_OF_LANDING.Consignee_address AS Consignee_address,
+     BILL_OF_LANDING.Location_code AS Location_code,
      BILL_OF_LANDING.Goods_description AS Goods_description,
      BILL_OF_LANDING.Volume_in_cubic_meters AS Volume_in_cubic_meters,
      BILL_OF_LANDING.Num_of_ctn_for_this_bol AS Num_of_ctn_for_this_bol,
@@ -77,6 +78,7 @@ WHERE
 		<field name="Notify_address" class="java.lang.Object"/>
 		<field name="Exporter_name" class="java.lang.Object"/>
 		<field name="Exporter_address" class="java.lang.Object"/>
+                <field name="Location_code" class="java.lang.Object"/>
 		<field name="Consignee_name" class="java.lang.Object"/>
 		<field name="Consignee_address" class="java.lang.Object"/>
 		<field name="Goods_description" class="java.lang.Object"/>
@@ -110,6 +112,7 @@ WHERE
      BILL_OF_LANDING.Notify_address AS Notify_address,
 	 BILL_OF_LANDING.Exporter_name AS Exporter_name,
      BILL_OF_LANDING.Exporter_address AS Exporter_address,
+     BILL_OF_LANDING.Location_code AS Location_code,
      BILL_OF_LANDING.Consignee_name AS Consignee_name,
      BILL_OF_LANDING.Consignee_address AS Consignee_address,
      BILL_OF_LANDING.Goods_description AS Goods_description,
@@ -134,6 +137,7 @@ WHERE
 	<field name="Notify_address" class="java.lang.Object"/>
 	<field name="Exporter_name" class="java.lang.Object"/>
 	<field name="Exporter_address" class="java.lang.Object"/>
+        <field name="Location_code" class="java.lang.Object"/>
 	<field name="Consignee_name" class="java.lang.Object"/>
 	<field name="Consignee_address" class="java.lang.Object"/>
 	<field name="Goods_description" class="java.lang.Object"/>
@@ -210,10 +214,10 @@ WHERE
 							<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
 								<reportElement mode="Transparent" x="0" y="0" width="60" height="13" forecolor="#000000" backcolor="#FFFFFF" uuid="fc013eab-8f23-44b5-b16f-16df25c6ddf9"/>
 								<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
-									<font fontName="SansSerif" size="5" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+									<font fontName="Impact" size="7" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 									<paragraph lineSpacing="Single" leftIndent="1" spacingBefore="1"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$F{Bol_reference}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{Bol_reference} + " \n\n\n Localisation: " + $F{Location_code}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -226,7 +230,7 @@ WHERE
 									<font fontName="SansSerif" size="5" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 									<paragraph lineSpacing="Single" leftIndent="1" spacingBefore="1" spacingAfter="1"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$F{Goods_description}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{Goods_description}  ]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

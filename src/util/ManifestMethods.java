@@ -111,11 +111,11 @@ public class ManifestMethods {
                 + "escale.numero Numero,  "
                 + "escale.voyage Voyage,  "
                 + "escale.agent Consignataire,  "
-                + "to_char(to_date(escale.DATE_PASSE_ENTREE,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateArrivee,  "
+                + "to_char(to_date(escale.arrivee,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateArrivee,  "
                 + "to_char(to_date(escale.depart,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepart,  "
                 + "to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepartEff  "
                 + "FROM escale   "
-                + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),'\\W','') like ?  "
+                + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),'\\W',''),'-','') like ?  "
                 + "and to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
 
         if (CNX != null) {
@@ -130,7 +130,7 @@ public class ManifestMethods {
                 LOG.info("Recherche des escales probable du navire " + escaleCible.getNavire().replace("-", " ").replace(" ", "")
                         + " sur la période du " + debut + " au " + fin);
 
-                pst.setString(1, escaleCible.getNavire().replace("MT ", "").replace("MV ", "").replace("MTS ", "").replace("M/V ", "").replace(" ", "") + "%");
+                pst.setString(1, escaleCible.getNavire().replace("MT ", "").replace("MV ", "").replace("MTS ", "").replace("M/V ", "").replace(" ", "").replace("-", "") + "%");
                 pst.setString(2, debut);
                 pst.setString(3, fin);
                 ResultSet rst = pst.executeQuery();
@@ -208,12 +208,12 @@ public class ManifestMethods {
                 + "escale.numero Numero,  "
                 + "escale.voyage Voyage,  "
                 + "escale.agent Consignataire,  "
-                + "to_char(to_date(escale.DATE_PASSE_ENTREE,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateArrivee,  "
+                + "to_char(to_date(escale.arrivee,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateArrivee,  "
                 + "to_char(to_date(escale.depart,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepart,  "
                 + "to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepartEff  "
                 + "FROM escale   "
-                + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),' ','') like ?  "
-                + "and to_char(to_date(escale.DATE_PASSE_ENTREE,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
+                + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),' ',''),'-','') like ?  "
+                + "and to_char(to_date(escale.ARRIVEE,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
 
         if (CNX != null) {
             try {
@@ -227,7 +227,7 @@ public class ManifestMethods {
                 LOG.info("Recherche des escales probable du navire " + escaleCible.getNavire().replace("-", " ").replace(" ", "")
                         + " sur la période du " + debut + " au " + fin);
 
-                pst.setString(1, escaleCible.getNavire().replace("MT ", "").replace("MV ", "").replace("MTS ", "").replace("M/V ", "").replace(" ", "") + "%");
+                pst.setString(1, escaleCible.getNavire().replace("MT ", "").replace("MV ", "").replace("MTS ", "").replace("M/V ", "").replace(" ", "").replace("-", "") + "%");
                 pst.setString(2, debut);
                 pst.setString(3, fin);
                 ResultSet rst = pst.executeQuery();
@@ -252,7 +252,7 @@ public class ManifestMethods {
                             LOG.info("Escleunik :" + esc.getEscleunik() + " | " + escaleCible.getEscleunik());
                             escaleCible.setEscleunik(esc.getEscleunik());
                             escaleCible.setNumero(esc.getNumero());
-                            escaleCible.setDateArrivee(esc.getDateDepart());
+                            escaleCible.setDateArrivee(esc.getDateArrivee());
                             escaleCible.setDateDepart(esc.getDateDepart());
                         LOG.info("********************************************");
                     });
@@ -284,7 +284,7 @@ public class ManifestMethods {
 
                     escaleCible.setEscleunik(data.get(index).getEscleunik());
                     escaleCible.setNumero(data.get(index).getNumero());
-                    escaleCible.setDateArrivee(data.get(index).getDateDepart());
+                    escaleCible.setDateArrivee(data.get(index).getDateArrivee());
                     escaleCible.setDateDepart(data.get(index).getDateDepart());
                     LOG.info("********************************************");
 

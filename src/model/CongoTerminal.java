@@ -96,6 +96,12 @@ public class CongoTerminal  implements Serializable {
     @Size(max = 50)
     @Column(name = "POD", length = 50)
     private String pod;
+    @Size(max = 20)
+    @Column(name = "OPL", length = 20)
+    private String opl;
+    @Size(max = 20)
+    @Column(name = "PDESF", length = 20)
+    private String pdesf;
     @Size(max = 50)
     @Column(name = "ARMATEUR", length = 50)
     private String armateur;
@@ -264,6 +270,8 @@ public class CongoTerminal  implements Serializable {
     public void setDateDep(String dateDep) {
         this.dateDep = dateDep;
     }
+    
+    
 
 //    @Override
 //    public int hashCode() {
@@ -288,6 +296,22 @@ public class CongoTerminal  implements Serializable {
     @Override
     public String toString() {
         return "db.CongoTerminal[ id=" + id + " ]";
+    }
+
+    public String getOpl() {
+        return opl;
+    }
+
+    public void setOpl(String opl) {
+        this.opl = opl;
+    }
+
+    public String getPdesf() {
+        return pdesf;
+    }
+
+    public void setPdesf(String pdesf) {
+        this.pdesf = pdesf;
     }
     
 }
