@@ -85,8 +85,13 @@ public class importCongoTerminal {
                     stmt.setInt(1, Integer.valueOf(listFile.getName().substring(0, 6))); //MOIS                
                     stmt.setString(2, row.getCell(0).toString()); //NUM_CTN
                     stmt.setString(3, row.getCell(11) == null ? "" : row.getCell(11).toString()); //DAT
-                    stmt.setString(4, row.getCell(1) == null ? "" : row.getCell(1).toString()); //MVNT
-                    stmt.setString(5, row.getCell(10) == null ? "" : row.getCell(10).toString()); //TRAFIC
+                    stmt.setString(4, row.getCell(1) == null ? "" 
+                            : row.getCell(10).toString().trim().equalsIgnoreCase("DSCH") ? "DEBA"
+                            : row.getCell(10).toString().trim().equalsIgnoreCase("LOAD") ? "EMBA" : ""); //MVNT
+                    stmt.setString(5, row.getCell(10) == null ? ""
+                            : row.getCell(10).toString().trim().equalsIgnoreCase("Transbo") ? "T"
+                            : row.getCell(10).toString().trim().equalsIgnoreCase("Import") ? "I"
+                            : row.getCell(10).toString().trim().equalsIgnoreCase("Export") ? "E" : ""); //TRAFIC
                     stmt.setString(6, row.getCell(9) == null ? "" : row.getCell(9).toString()); //P V
                     stmt.setString(7, row.getCell(2) == null ? "" : row.getCell(2).toString());//ISO
                     stmt.setString(8, row.getCell(3) == null ? "" : row.getCell(3).toString());//TARE
@@ -101,7 +106,7 @@ public class importCongoTerminal {
                     stmt.setString(17, row.getCell(18) == null ? "" : row.getCell(18).toString());//DATE ATD
                     stmt.setString(18, row.getCell(3) == null ? "" : row.getCell(3).toString()); //TYPE
                     stmt.setString(19, row.getCell(4) == null ? "" : row.getCell(4).toString().replace(".0", "")); //EVP
-                    stmt.setString(20, row.getCell(12) == null ? "" : row.getCell(12).toString()); //PARC
+                    stmt.setString(20, ""); //PARC
                     stmt.setString(21, row.getCell(12) == null ? "" : row.getCell(12).toString());//TRUCK VESSEL
                     stmt.setString(22, row.getCell(16) == null ? "" : row.getCell(16).toString());//TYPE NAVIRE
                     stmt.setString(23, row.getCell(19) == null ? "" : row.getCell(19).toString());//DGX
@@ -121,7 +126,7 @@ public class importCongoTerminal {
                     i++;
                 }
                 Thread.sleep(1000);
-                if(Files.deleteIfExists(listFile.toPath())){
+                if (Files.deleteIfExists(listFile.toPath())) {
                     LOG.info("FICHIER supprimé");
                 };
                 LOG.info("TERMINE : " + i + " enregistrement.");
