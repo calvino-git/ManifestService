@@ -40,7 +40,7 @@ public class importCongoTerminal {
 
     public static int lastLine = 0;
 
-    public static void main(String[] args) throws SQLException, InterruptedException {
+    public static void main(String[] args) throws SQLException, InterruptedException, IOException {
         File excel = new File("excel");
         XSSFWorkbook workbk;
 
@@ -64,6 +64,7 @@ public class importCongoTerminal {
 //                }
 //            });
 //        }
+/*
         for (File listFile : excel.listFiles()) {
             try {
                 if (listFile.getName().startsWith("~")) {
@@ -85,7 +86,7 @@ public class importCongoTerminal {
                     stmt.setInt(1, Integer.valueOf(listFile.getName().substring(0, 6))); //MOIS                
                     stmt.setString(2, row.getCell(0).toString()); //NUM_CTN
                     stmt.setString(3, row.getCell(11) == null ? "" : row.getCell(11).toString()); //DAT
-                    stmt.setString(4, row.getCell(1) == null ? "" 
+                    stmt.setString(4, row.getCell(1) == null ? ""
                             : row.getCell(1).toString().trim().equalsIgnoreCase("DSCH") ? "DEBA"
                             : row.getCell(1).toString().trim().equalsIgnoreCase("LOAD") ? "EMBA" : ""); //MVNT
                     stmt.setString(5, row.getCell(10) == null ? ""
@@ -125,16 +126,19 @@ public class importCongoTerminal {
                     stmt.executeUpdate();
                     i++;
                 }
-                Thread.sleep(1000);
-                if (Files.deleteIfExists(listFile.toPath())) {
-                    LOG.info("FICHIER supprimé");
-                };
+
                 LOG.info("TERMINE : " + i + " enregistrement.");
 
 //                MYWORKS.put(listFile.getName(),workbk);
             } catch (IOException | InvalidFormatException ex) {
                 ex.printStackTrace();
             }
+        }
+*/
+        for (File listFile : excel.listFiles()) {
+            if (Files.deleteIfExists(listFile.toPath())) {
+                LOG.info("FICHIER supprimé");
+            };
         }
     }
 }
