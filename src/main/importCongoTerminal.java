@@ -100,7 +100,7 @@ public class importCongoTerminal {
                     stmt.setString(16, row.getCell(17) == null ? "" : row.getCell(17).toString());//DATE ATA
                     stmt.setString(17, row.getCell(18) == null ? "" : row.getCell(18).toString());//DATE ATD
                     stmt.setString(18, row.getCell(3) == null ? "" : row.getCell(3).toString()); //TYPE
-                    stmt.setString(19, row.getCell(4) == null ? "" : row.getCell(4).toString()); //EVP
+                    stmt.setString(19, row.getCell(4) == null ? "" : row.getCell(4).toString().replace(".0", "")); //EVP
                     stmt.setString(20, row.getCell(12) == null ? "" : row.getCell(12).toString()); //PARC
                     stmt.setString(21, row.getCell(12) == null ? "" : row.getCell(12).toString());//TRUCK VESSEL
                     stmt.setString(22, row.getCell(16) == null ? "" : row.getCell(16).toString());//TYPE NAVIRE
@@ -109,7 +109,11 @@ public class importCongoTerminal {
                     stmt.setString(25, row.getCell(21) == null ? "" : row.getCell(21).toString()); //OOG
                     stmt.setString(26, row.getCell(22) == null ? "" : row.getCell(22).toString()); //OPL
                     stmt.setString(27, row.getCell(25) == null ? "" : row.getCell(25).toString()); //PDESF
-                    stmt.setString(28, row.getCell(26) == null ? "" : row.getCell(26).toString());//PRESENCE
+                    stmt.setString(28, row.getCell(26) == null ? "" : row.getCell(26).toString().replace(".0", ""));//PRESENCE
+                    stmt.setString(29, "");//TRUCK VESSEL IN
+                    stmt.setString(30, "");//NAVIRE IN
+                    stmt.setString(31, "");//VOYAGE IN
+                    stmt.setString(32, "");//TYPE IN 
                     if (i % 1000 == 0) {
                         System.out.print("=");
                     }

@@ -29108,3 +29108,13 @@ null
 2020-04-15 13:14:31,124 [INFO ] (PortDestination.java:searchPortTRB:46) BOL N°3 => REF : 590411464
 2020-04-15 13:14:31,124 [INFO ] (PortDestination.java:searchPortTRB:47) Nature : TRBI
 2020-04-15 13:14:31,124 [INFO ] (PortDestination.java:searchPortTRB:57) BL AVANT : POL / POD = 590411464 : AEJEA/CGPNR
+2020-05-07 10:35:48,380 [INFO ] (importCongoTerminal.java:main:72) 202004.xlsx
+2020-05-07 10:37:22,030 [INFO ] (importCongoTerminal.java:main:82)  LIGNE 0
+2020-05-07 10:39:26,554 [INFO ] (importCongoTerminal.java:main:72) 202004.xlsx
+2020-05-07 10:39:41,546 [INFO ] (importCongoTerminal.java:main:82)  LIGNE 0
+2020-05-07 10:44:47,133 [INFO ] (importCongoTerminal.java:main:72) 202004.xlsx
+2020-05-07 10:45:22,605 [INFO ] (importCongoTerminal.java:main:82)  LIGNE 0
+2020-05-07 10:48:45,137 [INFO ] (importCongoTerminal.java:main:72) 202004.xlsx
+2020-05-07 10:48:54,317 [INFO ] (importCongoTerminal.java:main:82)  LIGNE 0
+2020-05-07 10:56:02,019 [INFO ] (importCongoTerminal.java:main:72) 202004.xlsx
+2020-05-07 10:56:26,648 [INFO ] (importCongoTerminal.java:main:82)  LIGNE 0
