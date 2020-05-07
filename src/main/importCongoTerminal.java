@@ -101,7 +101,7 @@ public class importCongoTerminal {
                     stmt.setString(12, row.getCell(23) == null ? "" : row.getCell(23).toString());//POL
                     stmt.setString(13, row.getCell(24) == null ? "" : row.getCell(24).toString());//POD
                     stmt.setString(14, row.getCell(8) == null ? "" : row.getCell(8).toString());//OWNER
-                    stmt.setString(15, row.getCell(5) == null ? "" : row.getCell(5).toString());//POIDS
+                    stmt.setString(15, row.getCell(5) == null ? "" : row.getCell(5).toString().replace(".0", ""));//POIDS
                     stmt.setString(16, row.getCell(17) == null ? "" : row.getCell(17).toString());//DATE ATA
                     stmt.setString(17, row.getCell(18) == null ? "" : row.getCell(18).toString());//DATE ATD
                     stmt.setString(18, row.getCell(3) == null ? "" : row.getCell(3).toString()); //TYPE
