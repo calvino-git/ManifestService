@@ -86,8 +86,8 @@ public class importCongoTerminal {
                     stmt.setString(2, row.getCell(0).toString()); //NUM_CTN
                     stmt.setString(3, row.getCell(11) == null ? "" : row.getCell(11).toString()); //DAT
                     stmt.setString(4, row.getCell(1) == null ? "" 
-                            : row.getCell(10).toString().trim().equalsIgnoreCase("DSCH") ? "DEBA"
-                            : row.getCell(10).toString().trim().equalsIgnoreCase("LOAD") ? "EMBA" : ""); //MVNT
+                            : row.getCell(1).toString().trim().equalsIgnoreCase("DSCH") ? "DEBA"
+                            : row.getCell(1).toString().trim().equalsIgnoreCase("LOAD") ? "EMBA" : ""); //MVNT
                     stmt.setString(5, row.getCell(10) == null ? ""
                             : row.getCell(10).toString().trim().equalsIgnoreCase("Transbo") ? "T"
                             : row.getCell(10).toString().trim().equalsIgnoreCase("Import") ? "I"
