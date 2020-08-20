@@ -39,6 +39,7 @@ import model.Container;
 import controller.EscaleJpaController;
 import exception.IllegalOrphanException;
 import exception.NonexistentEntityException;
+import java.util.ResourceBundle;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -47,7 +48,9 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.fonts.InvalidFontException;
 import org.apache.commons.net.ftp.FTPClient;
+import util.Const;
 import util.PersistObject;
+import static util.PersistObject.existsManifeste;
 
 /**
  *
@@ -77,29 +80,57 @@ public class ManifesteService {
 //        } catch (SQLException ex) {
 //            ex.printStackTrace();
 //        }
-        runAction();
+        String action = "main";
+        if (args.length > 0) {
+            action = args[0];
+            Const.PROPERTIES = ResourceBundle.getBundle("config." + args[0] + "_config");
+            Const.CARGO_DRIVER = PROPERTIES.getString("cargo.driver");
+            Const.CARGO_FULL_URL = PROPERTIES.getString("cargo.fullurl");
+            Const.CARGO_USER = PROPERTIES.getString("cargo.user");
+            Const.CARGO_PASSWORD = PROPERTIES.getString("cargo.password");
+            Const.DOSSIER_MANIFEST_ERR = PROPERTIES.getString("dossier.manifest.err");
+            Const.DOSSIER_MANIFEST_IN = PROPERTIES.getString("dossier.manifest.in");
+            Const.DOSSIER_MANIFEST_ARC = PROPERTIES.getString("dossier.manifest.arc");
+            Const.DOSSIER_MANIFEST_OUT = PROPERTIES.getString("dossier.manifest.out");
+            Const.DOSSIER_FTP_IN = PROPERTIES.getString("ftp.comingManifest");
+            Const.DOSSIER_FTP_ARC = PROPERTIES.getString("ftp.archiveManifeste");
+            Const.DOSSIER_DC = PROPERTIES.getString("dossier.dc");
+        }
+
+        runAction(action);
     }
 
-    static void runAction() {
+    static void runAction(String action) {
         //        importXml();
         String[] destXmlManifest = new String[2];
         String[] destPdfManifest = new String[2];
         File listManifest = new File(DOSSIER_MANIFEST_IN);
         File[] destXmlManifestFile = new File[2], destPdfManifestFile = new File[2];
         while (true) {
-            if (FtpClient.connect(FTP, false)) {
-//                LOG.info("CONNECTED : " + ftp.isConnected()) ;
-                //Recuperation des manifestes s'ils existent
-                FtpClient.listFTPFiles(FTP, DOSSIER_FTP_IN, DOSSIER_MANIFEST_IN, DOSSIER_FTP_ARC);
-
-                // deconnexion au FTP DOUANE
-                FtpClient.disconnect(FTP);
-            }
+//            if (action.equalsIgnoreCase("main")) {
+//                if (FtpClient.connect(FTP, false)) {
+////                LOG.info("CONNECTED : " + ftp.isConnected()) ;
+//                    //Recuperation des manifestes s'ils existent
+//                    FtpClient.listFTPFiles(FTP, DOSSIER_FTP_IN, DOSSIER_MANIFEST_IN, DOSSIER_FTP_ARC);
+//
+//                    // deconnexion au FTP DOUANE
+//                    FtpClient.disconnect(FTP);
+//                }
+//            }
             boolean mois = false;
             if (listManifest.listFiles() != null && listManifest.listFiles().length > 0) {
                 for (File manifestFile : listManifest.listFiles()) {
                     LOG.info("FICHIER " + manifestFile.getName());
-
+                    String[] split = manifestFile.getName().split("-");
+                    String numero_douane = "";
+                    String date_enregistrement_douane = "";
+                    if (split.length > 3) {
+                        numero_douane = split[2] + "-" + split[3].replace(".xml", "");
+                        if (split.length > 4) {
+                            date_enregistrement_douane = split[4].replace(".xml", "");
+                        }
+                    }
+                    
                     //Validation du fichier Manifest: renvoie 
                     manifest = ManifestMethods.validationManifest(manifestFile, isManifest, DOSSIER_MANIFEST_ERR);
 
@@ -124,7 +155,7 @@ public class ManifesteService {
 
                             LOG.info("============ DEBUT TRATITEMENT  ============");
 
-                            id_manifest = persistenceXML(manifest, destXmlManifestFile[0]);
+                            id_manifest = persistenceXML(manifest, destXmlManifestFile[0], numero_douane,date_enregistrement_douane);
 //                                Awmds manif = getManifeste(id_manifest);
 //                                AwmdsToXml(manif, destXmlManifestFile[0]);
                             try {
@@ -157,15 +188,27 @@ public class ManifesteService {
                                 File target = null;
 
                                 if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().startsWith("CGPN")) {
-                                    target = new File(DOSSIER_MANIFEST_ARC + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 7));
+                                    if (destXmlManifestFile[0].getAbsolutePath().contains("ESCALE_NON_TROUVEE")) {
+                                        target = new File(DOSSIER_MANIFEST_ARC + File.separator + "ESCALE_NON_TROUVEE" + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 7)
+                                                + File.separator + manifest.getGeneralSegment().getTransportInformation().getIdentityOfTransporter());
+                                    } else {
+                                        target = new File(DOSSIER_MANIFEST_ARC + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 7)
+                                                + File.separator + manifest.getGeneralSegment().getTransportInformation().getIdentityOfTransporter());
+                                    }
                                 }
                                 if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDestinationCode().startsWith("CGPN")) {
-                                    target = new File(DOSSIER_MANIFEST_ARC + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfArrival().substring(0, 7));
+                                    if (destXmlManifestFile[0].getAbsolutePath().contains("ESCALE_NON_TROUVEE")) {
+                                        target = new File(DOSSIER_MANIFEST_ARC + File.separator + "ESCALE_NON_TROUVEE" + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfArrival().substring(0, 7)
+                                                + File.separator + manifest.getGeneralSegment().getTransportInformation().getIdentityOfTransporter());
+                                    } else {
+                                        target = new File(DOSSIER_MANIFEST_ARC + File.separator + manifest.getGeneralSegment().getGeneralSegmentId().getDateOfArrival().substring(0, 7)
+                                                + File.separator + manifest.getGeneralSegment().getTransportInformation().getIdentityOfTransporter());
+                                    }
                                 }
 
                                 if (target != null) {
                                     if (!target.exists()) {
-                                        Files.createDirectory(target.toPath());
+                                        Files.createDirectories(target.toPath());
                                     }
                                     Files.move(manifestFile.toPath(), target.toPath().resolve(manifestFile.toPath().getFileName()), StandardCopyOption.REPLACE_EXISTING);
                                     LOG.info(target.getAbsolutePath() + "/" + manifestFile.toPath().getFileName() + " crée.");
@@ -345,10 +388,10 @@ public class ManifesteService {
             System.out.print("=");
         });
         deleteGI(id);
-        System.out.println("=");
+        Logger.getLogger(ManifesteService.class.getName()).log(Level.SEVERE, "SUPPRESSION DU MANIFESTE DOUBLON ID : {0}", id);
     }
 
-    public static int persistenceXML(Awmds awmds, File xmlFile) {
+    public static int persistenceXML(Awmds awmds, File xmlFile, String numero_douane,String date_enregistrement_douane) {
         int id = 0;
         LOG.info("=======================================");
         LOG.info("===========>DEBUT PERSISTENCE XML<===========");
@@ -385,32 +428,33 @@ public class ManifesteService {
             trim[4] = "0";
         }
         Escale escale = new Escale("", "", "", "", trim[4], Integer.valueOf(trim[3]), "");
-        if (!mois.equals(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE).substring(0, 6))) {
-            LOG.info("===> Recherche dans le fichier de CONGO TERMINAL : " + mois);
-            int[] r = deleteOnExistsManifest(awmds);
-            id = r[1];
-            int nbrManifestDeleted = r[0];
-            LOG.info("Nombre de manifestes existants : " + nbrManifestDeleted);
-
-//                    String arrival = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfArrival();
-//                    String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture();
-//                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival("2019-07-01");
-//                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture("2019-07-31");
+        //Existence du manifeste dans la base de donnée
+        LOG.info("VERIFICATION DE L'EXISTENCE DU MANIFESTES DANS LA BASE");
+        id = existsManifeste(awmds);
+        
+        if (Integer.valueOf(mois) < Integer.valueOf(LocalDate.now().format(DateTimeFormatter.ofPattern("uuuuMM")))) {
+            LOG.info("===> RECHERCHE DES PORTS EN TRANSBO DANS LA TABLE CONGO-TERMINAL DU MOIS : " + mois);
             PortDestination.searchPortTRB(awmds);
-//                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfArrival(arrival);
-//                    awmds.getGeneralSegment().getGeneralSegmentId().setDateOfDeparture(depart);
-            id = PersistObject.updateBolPort(awmds, escale, id);
-            if (id == 0) {
-                id = manifestToDB(awmds, escale);
-            }
-        } else {
-            LOG.info("===> Mois en cours " + mois);
-            id = PersistObject.existsManifeste(awmds);
-            LOG.info("Manifeste existant  : " + id);
-            if (id == 0) {
-                id = manifestToDB(awmds, escale);
-            }
         }
+        if(id != 0){
+            LOG.info("VERIFICATION DE L'EXISTENCE DES DOUBLONS DANS LA BASE");
+            int[] r = supprimerManifesteDoublon(awmds); //Renvoie le nombre de manifestes existants en double r[0] et le id du manifeste retenu r[1].
+            id = r[1];
+            int nbrManifestesSupprims = r[0];
+            if(nbrManifestesSupprims>0){
+                LOG.info("MANIFESTE(S) SUPPRIME(S) EN DOUBLE : " + nbrManifestesSupprims);
+                LOG.info("MANIFESTE RETENU : " + id);
+            }else{
+                LOG.info("AUCUN DOUBLON");
+            }
+            
+            LOG.info("===> MIS A JOUR DES PORTS EN TRANSBO POUR LE MANIFESTE  " + id);
+            PersistObject.updateBolPort(awmds, escale, id,numero_douane,date_enregistrement_douane);
+        }else{
+            LOG.info("===> ENREGISTREMENT DU NOUVEAU MANIFESTE ");
+            id = manifestToDB(awmds, escale, numero_douane,date_enregistrement_douane);
+        }
+     
         LOG.info("===> Enregistrement du nouveau XML traité");
         AwmdsToXml(awmds, xmlFile);
 //        
@@ -470,10 +514,10 @@ public class ManifesteService {
         }
     }
 
-    private static int[] deleteOnExistsManifest(Awmds awmds) {
+    private static int[] supprimerManifesteDoublon(Awmds awmds) {
         int[] r = new int[2];
         CNX = DbHandler.getDbConnection();
-        String query = "select id from general_info where "
+        String query = "select id from DSIPAPN.MANIFESTE_SEGMENT_GENERAL where "
                 + "CUSTOMS_OFFICE_CODE like '"
                 + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
                 + "' and VOYAGE_NUMBER like '"
@@ -482,26 +526,28 @@ public class ManifesteService {
                 + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 10)
                 + "' order by id desc";
         int i = 0;
-        int id = 0;
-        int idx = 0;
+        int id_ok = 0;
+        int id_to_del = 0;
         try (Statement stmt = CNX.createStatement()) {
             ResultSet rst = stmt.executeQuery(query);
             while (rst.next()) {
                 if (i == 0) {
-                    id = rst.getInt("id");
+                    id_ok = rst.getInt("id");
+                    Logger.getLogger(ManifesteService.class.getName()).log(Level.SEVERE, "MANIFESTE ID : {0}", id_to_del);
                 } else {
-                    idx = rst.getInt("id");
-                    deleteManifeste(idx);
+                    id_to_del = rst.getInt("id");
+                    deleteManifeste(id_to_del);
+                    i++;
                 }
-                i++;
-                System.out.println("id := " + idx);
+                
             }
             System.out.println(i);
         } catch (SQLException ex) {
-            Logger.getLogger(ManifesteService.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ManifesteService.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
-        r[0] = i;
-        r[1] = id;
+        r[0] = i; //Nombre de manifestes suprimés
+        r[1] = id_ok; //Manifeste à conserver
         return r;
     }
 
