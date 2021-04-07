@@ -102,7 +102,6 @@ public class ManifesteService {
     static void runAction(String action) {
         //        importXml();
         File listManifest = new File(DOSSIER_MANIFEST_IN);
-        File[] destXmlManifestFile = new File[2], destPdfManifestFile = new File[2];
         while (true) {
 //            if (action.equalsIgnoreCase("main")) {
 //                if (FtpClient.connect(FTP, false)) {
@@ -115,7 +114,6 @@ public class ManifesteService {
 //                }
 //            }
 
-            boolean mois = false;
             if (listManifest.listFiles() != null && listManifest.listFiles().length > 0) {
                 for (File manifestFile : listManifest.listFiles()) {
                     if (manifestFile.getName().endsWith(".xml")) {
@@ -140,10 +138,11 @@ public class ManifesteService {
 //                    if (manifest.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDestinationCode().equals("CGPNR") && manifest.getGeneralSegment().getGeneralSegmentId().getDateOfArrival().startsWith("2019")) {
 //                        mois = true;
 //                    }
-                    mois = true;
-                    if (manifest != null && mois) {
+//                    mois = true;
+                    if (manifest != null) {
                         String[] destXmlManifest = ManifestMethods.renameManifest(manifest, manifestFile.getName());
                         String[] destPdfManifest = new String[2];
+                        File[] destXmlManifestFile = new File[2], destPdfManifestFile = new File[2];
                         if (destXmlManifest != null) {
                             LOG.info("======" + destXmlManifest[0] + "=====");
                             destPdfManifest[0] = destXmlManifest[0].substring(0, destXmlManifest[0].length() - 4) + ".pdf";
