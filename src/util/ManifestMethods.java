@@ -15,14 +15,18 @@ import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static util.Const.LOG;
 import static util.Const.PROPERTIES;
 import static util.XmlObject.xmlToAwmds;
-import java.time.LocalTime;
 import static util.Const.CNX;
 
 /**
@@ -31,7 +35,7 @@ import static util.Const.CNX;
  */
 public class ManifestMethods {
 
-    static int diff = 10;
+    static long diff = 10;
     static boolean test = false;
 
     public static Awmds validationManifest(File fileXML, boolean isManifest, String DOSSIER_MANIFEST_ERR) {
@@ -104,50 +108,72 @@ public class ManifestMethods {
 
     public static Escale searchEscaleForExport(Escale escaleCible) {
         CNX = DbHandler.getDbConnection();
-
+        String queryString;
         List<Escale> data = new ArrayList<>();
-        String queryString = "SELECT escale.escleunik,  "
-                + "escale.navire Navire,  "
-                + "escale.numero Numero,  "
-                + "escale.voyage Voyage,  "
-                + "escale.agent Consignataire,  "
-                + "to_char(to_date(escale.arrivee,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateArrivee,  "
-                + "to_char(to_date(escale.depart,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepart,  "
-                + "to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepartEff  "
-                + "FROM escale   "
-                + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),'\\W',''),'-','') like ?  "
-                + "and to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
-
+        PreparedStatement pst;
         if (CNX != null) {
+            LOG.info("===> Connexion à la base de donnnée avec succès.");
             try {
-                LOG.info("===> Connexion à la base de donnnée avec succès.");
-                PreparedStatement pst = CNX.prepareStatement(queryString);
-                LOG.info("********************************************");
+                /*
+                queryString = "select E.ESCLEUNIK,M.IDENTITY_TRANSPORTER NAVIRE,E.NUMERO,E.ARRIVEE,E.DEPART "
+                        + "from MANIFESTE_SEGMENT_GENERAL M JOIN PPNCARGO.ESCALE E ON E.ESCLEUNIK=M.ESCLEUNIK "
+                        + "where M.IDENTITY_TRANSPORTER like ? and M.VOYAGE_NUMBER like ? and M.DATE_DEPARTURE like ?";
+                pst = CNX.prepareStatement(queryString);
+                pst.setString(1, escaleCible.getNavire());
+                pst.setString(2, escaleCible.getVoyage());
+                pst.setString(3, escaleCible.getDateDepart());
+                ResultSet rst1 = pst.executeQuery();
+                if (rst1.next()) {
+                    escaleCible.setEscleunik(rst1.getInt("ESCLEUNIK"));
+                    escaleCible.setNumero(rst1.getString("NUMERO"));
+                    escaleCible.setDateArrivee(rst1.getString("ARRIVEE"));
+                    escaleCible.setDateDepart(rst1.getString("DEPART"));
+                } else 
+                 */
+                {
 
-                String debut = dateFormater(escaleCible.getDateDepart()).minusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
-                String fin = dateFormater(escaleCible.getDateDepart()).plusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
+                    queryString = "SELECT escale.escleunik,  "
+                            + "escale.navire Navire,  "
+                            + "escale.numero Numero,  "
+                            + "escale.voyage Voyage,  "
+                            + "escale.agent Consignataire,  "
+                            + "escale.arrivee DateArrivee,  "
+                            + "escale.DATE_PASSE_ENTREE DateEntreePasse, "
+                            + "escale.depart DateDepart,  "
+                            + "escale.depart_effectif DateDepartEff  "
+                            + "FROM PPNCARGO.escale   "
+                            + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace("
+                            + "escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),'\\W',''),'-',''),'\\.','') like ?  "
+                            + "and ((escale.depart_effectif BETWEEN ? AND ?) OR (escale.depart BETWEEN ? AND ?))";
+                    pst = CNX.prepareStatement(queryString);
+                    LOG.info("********************************************");
 
-                LOG.info("Recherche des escales probable du navire " + escaleCible.getNavire().replace("-", " ").replace(" ", "")
-                        + " sur la période du " + debut + " au " + fin);
+                    String debut = dateFormater(escaleCible.getDateDepart()).minusDays(15).format(DateTimeFormatter.BASIC_ISO_DATE);
+                    String fin = dateFormater(escaleCible.getDateDepart()).plusDays(15).format(DateTimeFormatter.BASIC_ISO_DATE);
+                    String navire = escaleCible.getNavire().replace("/", "").replace("MV ", "").replace("MTS ", "").replace("MT ", "").replace(" ", "").replace("-", "").replace(".", "");
 
-                pst.setString(1, escaleCible.getNavire().replace("MT ", "").replace("MV ", "").replace("MTS ", "").replace("M/V ", "").replace(" ", "").replace("-", "") + "%");
-                pst.setString(2, debut);
-                pst.setString(3, fin);
-                ResultSet rst = pst.executeQuery();
-                while (rst.next()) {
+                    LOG.info("Recherche des escales probable du navire " + navire + " sur la période du " + debut + " au " + fin);
 
-                    data.add(new Escale(rst.getString("Voyage"), rst.getString("Navire"), rst.getString("DateArrivee"), rst.getString("DateDepart"), rst.getString("Numero"), rst.getInt("escleunik"), "EXPORT"));
-                }
-                LOG.info("********************************************");
-                LOG.info("Nombre d'escales trouvés : " + data.size());
-                LOG.info("********************************************");
-                CNX.close();
-                if (data.isEmpty()) {
-                    return escaleCible;
-                }
+                    pst.setString(1, "%" + navire + "%");
+                    pst.setString(2, debut);
+                    pst.setString(3, fin);
+                    pst.setString(4, debut);
+                    pst.setString(5, fin);
+                    ResultSet rst = pst.executeQuery();
+                    while (rst.next()) {
+                        data.add(new Escale(rst.getString("Voyage"), rst.getString("Navire"), has(rst.getString("DateEntreePasse")) ? rst.getString("DateEntreePasse") : rst.getString("DateArrivee"),
+                                has(rst.getString("DateDepartEff")) ? rst.getString("DateDepartEff") : rst.getString("DateDepart"), rst.getString("Numero"), rst.getInt("escleunik"), "IMPORT"));
+                    }
+                    LOG.info("********************************************");
+                    LOG.info("Nombre d'escales trouvés : " + data.size());
+                    LOG.info("********************************************");
+                    CNX.close();
+                    if (data.isEmpty()) {
+                        return escaleCible;
+                    }
 
-                if (data.size() == 1) {
-                    data.forEach(esc -> {
+                    if (data.size() == 1) {
+                        data.forEach(esc -> {
                             LOG.info("Navire : " + esc.getNavire() + " | " + escaleCible.getNavire());
                             LOG.info("Voyage : " + esc.getVoyage() + " | " + escaleCible.getVoyage());
                             LOG.info("Date départ : " + esc.getDateDepart() + " | " + escaleCible.getDateDepart());
@@ -156,45 +182,50 @@ public class ManifestMethods {
 
                             escaleCible.setEscleunik(esc.getEscleunik());
                             escaleCible.setNumero(esc.getNumero());
-                            escaleCible.setDateArrivee(esc.getDateDepart());
-                            escaleCible.setDateDepart(esc.getDateDepart());
-                        LOG.info("********************************************");
-                    });
-                } else {
-                    String depart1 = escaleCible.getDateDepart().replace("-", "");
-                    int departCible = Integer.valueOf(depart1);
-                    int departCargo = Integer.valueOf(data.get(0).getDateDepart());
-                    diff = Math.abs(departCargo - departCible);
-                    int index = 0;
-                    for (Escale esc : data) {
-                        int departEscaleCible = Integer.valueOf(depart1);
-                        int departEscaleCargo = Integer.valueOf(esc.getDateDepart());
-                        if (departEscaleCible != departEscaleCargo) {
-                            if (diff > Math.abs(departEscaleCargo - departEscaleCible)) {
-                                diff = Math.abs(departEscaleCargo - departEscaleCible);
+                            escaleCible.setDateArrivee(has(esc.getDateArrivee()) ? esc.getDateArrivee() : escaleCible.getDateArrivee());
+                            escaleCible.setDateDepart(has(esc.getDateDepart()) ? esc.getDateDepart() : escaleCible.getDateDepart());
+                            LOG.info("********************************************");
+                        });
+                    } else {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+                        Date depart = sdf.parse(escaleCible.getDateDepart().replace("-", ""));
+                        Date departCible = depart;
+                        Date departCargo = sdf.parse(data.get(0).getDateDepart());
+                        diff = Math.abs(departCargo.toInstant().getEpochSecond() - departCible.toInstant().getEpochSecond());
+                        int index = 0;
+                        for (Escale esc : data) {
+                            Date departEscaleCible = depart;
+                            Date departEscaleCargo = sdf.parse(esc.getDateDepart());
+                            if (departEscaleCible != departEscaleCargo) {
+                                long tmp_diff = Math.abs(departEscaleCargo.toInstant().getEpochSecond() - departEscaleCible.toInstant().getEpochSecond());
+                                if (diff > tmp_diff) {
+                                    diff = tmp_diff;
+                                    index = data.indexOf(esc);
+                                }
+
+                            } else {
                                 index = data.indexOf(esc);
+                                break;
                             }
-
-                        } else {
-                            index = data.indexOf(esc);
-                            break;
                         }
+                        LOG.info("Navire : " + data.get(index).getNavire() + " | " + escaleCible.getNavire());
+                        LOG.info("Voyage : " + data.get(index).getVoyage() + " | " + escaleCible.getVoyage());
+                        LOG.info("Date départ : " + data.get(index).getDateDepart() + " | " + escaleCible.getDateDepart());
+                        LOG.info("Numero Escale : " + data.get(index).getNumero() + " | " + escaleCible.getNumero());
+                        LOG.info("Escleunik : " + data.get(index).getEscleunik() + " | " + escaleCible.getEscleunik());
+
+                        escaleCible.setEscleunik(data.get(index).getEscleunik());
+                        escaleCible.setNumero(data.get(index).getNumero());
+                        escaleCible.setDateArrivee(has(data.get(index).getDateArrivee()) ? data.get(index).getDateArrivee() : escaleCible.getDateArrivee());
+                        escaleCible.setDateDepart(has(data.get(index).getDateDepart()) ? data.get(index).getDateDepart() : escaleCible.getDateDepart());
+                        LOG.info("********************************************");
+
                     }
-                    LOG.info("Navire : " + data.get(index).getNavire() + " | " + escaleCible.getNavire());
-                    LOG.info("Voyage : " + data.get(index).getVoyage() + " | " + escaleCible.getVoyage());
-                    LOG.info("Date départ : " + data.get(index).getDateDepart() + " | " + escaleCible.getDateDepart());
-                    LOG.info("Numero Escale : " + data.get(index).getNumero() + " | " + escaleCible.getNumero());
-                    LOG.info("Escleunik : " + data.get(index).getEscleunik() + " | " + escaleCible.getEscleunik());
-
-                    escaleCible.setEscleunik(data.get(index).getEscleunik());
-                    escaleCible.setNumero(data.get(index).getNumero());
-                    escaleCible.setDateArrivee(data.get(index).getDateDepart());
-                    escaleCible.setDateDepart(data.get(index).getDateDepart());
-                    LOG.info("********************************************");
-
                 }
             } catch (SQLException ex) {
                 LOG.error(ex.getLocalizedMessage());
+            } catch (ParseException ex) {
+                Logger.getLogger(ManifestMethods.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return escaleCible;
@@ -203,48 +234,73 @@ public class ManifestMethods {
     public static Escale searchEscaleForImport(Escale escaleCible) {
         CNX = DbHandler.getDbConnection();
         List<Escale> data = new ArrayList<>();
-        String queryString = "SELECT escale.escleunik,  "
-                + "escale.navire Navire,  "
-                + "escale.numero Numero,  "
-                + "escale.voyage Voyage,  "
-                + "escale.agent Consignataire,  "
-                + "to_char(to_date(escale.arrivee,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateArrivee,  "
-                + "to_char(to_date(escale.depart,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepart,  "
-                + "to_char(to_date(escale.depart_effectif,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') DateDepartEff  "
-                + "FROM escale   "
-                + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),' ',''),'-','') like ?  "
-                + "and to_char(to_date(escale.ARRIVEE,'YYYYMMDD','NLS_DATE_LANGUAGE=AMERICAN'),'YYYYMMDD') BETWEEN ? AND ?";
+        PreparedStatement pst;
+        String queryString;
 
         if (CNX != null) {
+            LOG.info("===> Connexion à la base de donnnée avec succès.");
             try {
-                LOG.info("===> Connexion à la base de donnnée avec succès.");
-                PreparedStatement pst = CNX.prepareStatement(queryString);
-                LOG.info("********************************************");
+                /*   
+                queryString = "select E.ESCLEUNIK,M.IDENTITY_TRANSPORTER NAVIRE,E.NUMERO,E.ARRIVEE,E.DEPART "
+                        + "from MANIFESTE_SEGMENT_GENERAL M JOIN PPNCARGO.ESCALE E ON E.ESCLEUNIK=M.ESCLEUNIK "
+                        + "where M.IDENTITY_TRANSPORTER like ? and M.VOYAGE_NUMBER like ? and M.DATE_DEPARTURE like ?";
+                pst = CNX.prepareStatement(queryString);
+                pst.setString(1, escaleCible.getNavire());
+                pst.setString(2, escaleCible.getVoyage());
+                pst.setString(3, escaleCible.getDateDepart());
+                ResultSet rst1 = pst.executeQuery();
+                if (rst1.next()) {
+                    escaleCible.setEscleunik(rst1.getInt("ESCLEUNIK"));
+                    escaleCible.setNumero(rst1.getString("NUMERO"));
+                    escaleCible.setDateArrivee(rst1.getString("ARRIVEE"));
+                    escaleCible.setDateDepart(rst1.getString("DEPART"));
+                } else 
+                 */
+                {
+                    queryString = "SELECT escale.escleunik,  "
+                            + "escale.navire Navire,  "
+                            + "escale.numero Numero,  "
+                            + "escale.voyage Voyage,  "
+                            + "escale.agent Consignataire,  "
+                            + "escale.arrivee DateArrivee, "
+                            + "escale.DATE_PASSE_ENTREE DateEntreePasse, "
+                            + "escale.depart DateDepart, "
+                            + "escale.depart_effectif DateDepartEff  "
+                            + "FROM PPNCARGO.escale   "
+                            + "WHERE regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace("
+                            + "escale.navire,'MT\\W',''),'MV\\W',''),'MTS\\W',''),'M/V\\W',''),'\\W',''),'-',''),'\\.','') like ?  "
+                            + "and ((escale.ARRIVEE BETWEEN ? AND ?) OR (escale.DATE_PASSE_ENTREE BETWEEN ? AND ?))";
+                    pst = CNX.prepareStatement(queryString);
+                    LOG.info("********************************************");
 
-                String debut = dateFormater(escaleCible.getDateArrivee()).minusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
-                String fin = dateFormater(escaleCible.getDateArrivee()).plusDays(5).format(DateTimeFormatter.BASIC_ISO_DATE);
+                    String debut = dateFormater(escaleCible.getDateArrivee()).minusDays(15).format(DateTimeFormatter.BASIC_ISO_DATE);
+                    String fin = dateFormater(escaleCible.getDateArrivee()).plusDays(15).format(DateTimeFormatter.BASIC_ISO_DATE);
+                    String navire = escaleCible.getNavire().replace("/", "").replace("MV ", "").replace("MTS ", "").replace("MT ", "").replace(" ", "").replace("-", "").replace(".", "");
 
-                LOG.info("Recherche des escales probable du navire " + escaleCible.getNavire().replace("-", " ").replace(" ", "")
-                        + " sur la période du " + debut + " au " + fin);
+                    LOG.info("Recherche des escales probable du navire " + navire + " sur la période du " + debut + " au " + fin);
 
-                pst.setString(1, escaleCible.getNavire().replace("MT ", "").replace("MV ", "").replace("MTS ", "").replace("M/V ", "").replace(" ", "").replace("-", "") + "%");
-                pst.setString(2, debut);
-                pst.setString(3, fin);
-                ResultSet rst = pst.executeQuery();
-                while (rst.next()) {
-                    data.add(new Escale(rst.getString("Voyage"), rst.getString("Navire"), rst.getString("DateArrivee"), rst.getString("DateDepart"), rst.getString("Numero"), rst.getInt("escleunik"), "IMPORT"));
-                }
-                LOG.info("********************************************");
-                LOG.info("Nombre d'escales trouvés : " + data.size());
-                LOG.info("********************************************");
-                CNX.close();
+                    pst.setString(1, "%" + navire + "%");
+                    pst.setString(2, debut);
+                    pst.setString(3, fin);
+                    pst.setString(4, debut);
+                    pst.setString(5, fin);
+                    ResultSet rst = pst.executeQuery();
+                    while (rst.next()) {
+                        data.add(new Escale(rst.getString("Voyage"), rst.getString("Navire"), has(rst.getString("DateEntreePasse")) ? rst.getString("DateEntreePasse") : rst.getString("DateArrivee"),
+                                has(rst.getString("DateDepartEff")) ? rst.getString("DateDepartEff") : rst.getString("DateDepart"), rst.getString("Numero"), rst.getInt("escleunik"), "IMPORT"));
+                    }
+                    LOG.info("********************************************");
+                    LOG.info("Nombre d'escales trouvés : " + data.size());
+                    LOG.info("********************************************");
+                    CNX.close();
 
-                if (data.isEmpty()) {
-                    return escaleCible;
-                }
+                    if (data.isEmpty()) {
+                        escaleCible.setDateDepart(escaleCible.getDateArrivee());
+                        return escaleCible;
+                    }
 
-                if (data.size() == 1) {
-                    data.forEach(esc -> {
+                    if (data.size() == 1) {
+                        data.forEach(esc -> {
                             LOG.info("Navire :" + esc.getNavire() + "/ " + escaleCible.getNavire());
                             LOG.info("Voyage :" + esc.getVoyage() + "/ " + escaleCible.getVoyage());
                             LOG.info("Date Arrivée :" + esc.getDateArrivee() + "/ " + escaleCible.getDateArrivee());
@@ -252,45 +308,51 @@ public class ManifestMethods {
                             LOG.info("Escleunik :" + esc.getEscleunik() + " | " + escaleCible.getEscleunik());
                             escaleCible.setEscleunik(esc.getEscleunik());
                             escaleCible.setNumero(esc.getNumero());
-                            escaleCible.setDateArrivee(esc.getDateArrivee());
-                            escaleCible.setDateDepart(esc.getDateDepart());
-                        LOG.info("********************************************");
-                    });
-                } else {
-                    String arrivee = escaleCible.getDateArrivee().replace("-", "");
-                    int arriveeCible = Integer.valueOf(arrivee);
-                    int arriveeCargo = Integer.valueOf(data.get(0).getDateArrivee());
-                    diff = Math.abs(arriveeCargo - arriveeCible);
-                    int index = 0;
-                    for (Escale esc : data) {
-                        int arriveeEscaleCible = Integer.valueOf(arrivee);
-                        int arriveeEscaleCargo = Integer.valueOf(esc.getDateArrivee());
-                        if (arriveeEscaleCible != arriveeEscaleCargo) {
-                            if (diff > Math.abs(arriveeEscaleCargo - arriveeEscaleCible)) {
-                                diff = Math.abs(arriveeEscaleCargo - arriveeEscaleCible);
+                            escaleCible.setDateArrivee(has(esc.getDateArrivee()) ? esc.getDateArrivee() : escaleCible.getDateArrivee());
+                            escaleCible.setDateDepart(has(esc.getDateDepart()) ? esc.getDateDepart() : escaleCible.getDateDepart());
+                            LOG.info("********************************************");
+                        });
+                    } else {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+                        Date arrivee = sdf.parse(escaleCible.getDateArrivee().replace("-", ""));
+                        Date arriveeCible = arrivee;
+                        Date arriveeCargo = sdf.parse(data.get(0).getDateArrivee());
+                        diff = Math.abs(arriveeCible.toInstant().getEpochSecond() - arriveeCargo.toInstant().getEpochSecond());
+                        int index = 0;
+                        for (Escale esc : data) {
+                            Date arriveeEscaleCible = arrivee;
+                            Date arriveeEscaleCargo = sdf.parse(esc.getDateArrivee());
+                            if (arriveeEscaleCible != arriveeEscaleCargo) {
+                                long tmp_diff = Math.abs(arriveeEscaleCible.toInstant().getEpochSecond() - arriveeEscaleCargo.toInstant().getEpochSecond());
+                                if (diff > tmp_diff) {
+                                    diff = tmp_diff;
+                                    index = data.indexOf(esc);
+                                }
+
+                            } else {
                                 index = data.indexOf(esc);
+                                break;
                             }
-
-                        } else {
-                            index = data.indexOf(esc);
-                            break;
                         }
+                        LOG.info("Navire :" + data.get(index).getNavire() + "/ " + escaleCible.getNavire());
+                        LOG.info("Voyage :" + data.get(index).getVoyage() + "/ " + escaleCible.getVoyage());
+                        LOG.info("Date Arrivée :" + data.get(index).getDateArrivee() + "/ " + escaleCible.getDateArrivee());
+                        LOG.info("Numero Escale :" + data.get(index).getNumero() + "/ " + escaleCible.getNumero());
+                        LOG.info("Escleunik :" + data.get(index).getEscleunik() + " | " + escaleCible.getEscleunik());
+
+                        escaleCible.setEscleunik(data.get(index).getEscleunik());
+                        escaleCible.setNumero(data.get(index).getNumero());
+                        escaleCible.setDateArrivee(has(data.get(index).getDateArrivee()) ? data.get(index).getDateArrivee() : escaleCible.getDateArrivee());
+                        escaleCible.setDateDepart(has(data.get(index).getDateDepart()) ? data.get(index).getDateDepart() : escaleCible.getDateDepart());
+                        LOG.info("********************************************");
+
                     }
-                    LOG.info("Navire :" + data.get(index).getNavire() + "/ " + escaleCible.getNavire());
-                    LOG.info("Voyage :" + data.get(index).getVoyage() + "/ " + escaleCible.getVoyage());
-                    LOG.info("Date Arrivée :" + data.get(index).getDateArrivee() + "/ " + escaleCible.getDateArrivee());
-                    LOG.info("Numero Escale :" + data.get(index).getNumero() + "/ " + escaleCible.getNumero());
-                    LOG.info("Escleunik :" + data.get(index).getEscleunik() + " | " + escaleCible.getEscleunik());
-
-                    escaleCible.setEscleunik(data.get(index).getEscleunik());
-                    escaleCible.setNumero(data.get(index).getNumero());
-                    escaleCible.setDateArrivee(data.get(index).getDateArrivee());
-                    escaleCible.setDateDepart(data.get(index).getDateDepart());
-                    LOG.info("********************************************");
-
                 }
             } catch (SQLException ex) {
                 LOG.info(ex.getLocalizedMessage());
+                LOG.info(ex.getLocalizedMessage());
+            } catch (ParseException ex) {
+                Logger.getLogger(ManifestMethods.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return escaleCible;
@@ -308,25 +370,23 @@ public class ManifestMethods {
 //		}
         str = str + File.separator;
         str2 = str2 + File.separator;
-        if (escale.getNumero() != null) {
-            String dateDepart = escale.getDateDepart();
-            // String day =dateArrivee.substring(6,8);
-            String month = dateDepart.replace("-", "").substring(4, 6);
-            String year = dateDepart.replace("-", "").substring(0, 4);
-            String numeroEscale = escale.getNumero();
-            String navire = escale.getNavire().replace(" ", "_");
-            String trafic = escale.getTrafic();
-            if(escale.getEscleunik() == 0){
-                str = str + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic  + File.separator + navire + File.separator
+        String dateDepart = escale.getDateDepart();
+        // String day =dateArrivee.substring(6,8);
+        String month = dateDepart.replace("-", "").substring(4, 6);
+        String year = dateDepart.replace("-", "").substring(0, 4);
+        String numeroEscale = escale.getNumero() != null ? escale.getNumero() : "XXXXXXXXXX";
+        String navire = escale.getNavire().replace(" ", "_");
+        String trafic = escale.getTrafic();
+        if (escale.getEscleunik() == 0) {
+            str = str + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
             str2 = str2 + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
-            }else{
+        } else {
             str = str + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
             str2 = str2 + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
-            }
         }
         Path path = Paths.get(str);
         Path path2 = Paths.get(str2);
@@ -365,25 +425,23 @@ public class ManifestMethods {
 //		}
         str = str + File.separator;
         str2 = str2 + File.separator;
-        if (escale.getNumero() != null) {
-            String dateArrivee = escale.getDateArrivee();
-            // String day =dateArrivee.substring(6,8);
-            String month = dateArrivee.replace("-", "").substring(4, 6);
-            String year = dateArrivee.replace("-", "").substring(0, 4);
-            String numeroEscale = escale.getNumero();
-            String navire = escale.getNavire().replace(" ", "_");
-            String trafic = escale.getTrafic();
-            if(escale.getEscleunik() == 0){
-                str = str + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic  + File.separator + navire + File.separator
+        String dateArrivee = escale.getDateDepart();
+        // String day =dateArrivee.substring(6,8);
+        String month = dateArrivee.replace("-", "").substring(4, 6);
+        String year = dateArrivee.replace("-", "").substring(0, 4);
+        String numeroEscale = escale.getNumero() != null ? escale.getNumero() : "XXXXXXXXXX";
+        String navire = escale.getNavire().replace(" ", "_");
+        String trafic = escale.getTrafic();
+        if (escale.getEscleunik() == 0) {
+            str = str + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
             str2 = str2 + File.separator + year + File.separator + "ESCALE_NON_TROUVEE" + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
-            }else{
+        } else {
             str = str + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
             str2 = str2 + File.separator + year + File.separator + month + File.separator + trafic + File.separator + navire + File.separator
                     + numeroEscale;
-            }
         }
         Path path = Paths.get(str);
         Path path2 = Paths.get(str2);
@@ -424,28 +482,26 @@ public class ManifestMethods {
             //getETB(newEscale.getNumero());
             if (sourceName.startsWith("Manifest-PAPN-EXP")) {
                 str[0] = str[0] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
                 str[1] = str[1] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
                 return str;
             } else {
                 str[0] = str[0] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalTime.now().toString().substring(0, 8).replaceAll(":", "")
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 str[1] = str[1] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalTime.now().toString().substring(0, 8).replaceAll(":", "")
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 return str;
             }
@@ -467,16 +523,16 @@ public class ManifestMethods {
             //                str[1] = str[1] + File.separator + sourceName.substring(0, 13) + "-IMP-" + sourceName.substring(sourceName.length() - 54);
             //                return str;
             //            } 
-            else if (sourceName.startsWith("Manifest-PAPN-EXP")) {
+            else if (sourceName.startsWith("Manifest-PAPN-IMP")) {
                 str = getManLocalEscaleDirectoryForImport(searchEscaleForImport(newEscale));
                 str[0] = str[0] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
                 str[1] = str[1] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
 
@@ -484,16 +540,14 @@ public class ManifestMethods {
             } else {
                 str = getManLocalEscaleDirectoryForImport(searchEscaleForImport(newEscale));
                 str[0] = str[0] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalTime.now().toString().substring(0, 8).replaceAll(":", "")
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 str[1] = str[1] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
-                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                        + "-" + LocalTime.now().toString().substring(0, 8).replaceAll(":", "")
+                        + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 return str;
             }
@@ -503,5 +557,9 @@ public class ManifestMethods {
 
     }
     //Take the instance of Awmds object and save into a xml file in a specific location
+
+    private static boolean has(String string) {
+        return string != null && !"".equals(string.trim());
+    }
 
 }

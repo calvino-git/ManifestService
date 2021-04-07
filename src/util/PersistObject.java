@@ -14,8 +14,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +39,7 @@ public class PersistObject {
     public static String getPortLibelle(String portCode, Statement stmt) {
         String port = null;
         try {
-            ResultSet rst = stmt.executeQuery("select libelle from papn_locode where code like '" + portCode + "'");
+            ResultSet rst = stmt.executeQuery("select libelle from DSIPAPN.LOCODE where code like '" + portCode + "'");
             if (rst.next()) {
                 port = rst.getString("libelle");
                 return port;
@@ -47,7 +51,7 @@ public class PersistObject {
         return portCode;
     }
 
-    public static int manifestToDB(Awmds cargo, Escale escale) {
+    public static int manifestToDB(Awmds cargo, Escale escale,String numero_douane,String date_enregistrement_douane) {
         Statement id = null;
         ResultSet resultSet = null;
         int id_gen;
@@ -58,6 +62,8 @@ public class PersistObject {
             CNX = DbHandler.getDbConnection();
             id = CNX.createStatement();
             Statement stmt = CNX.createStatement();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmm");
+            String[] dateheure = format.format(new Date()).split("-");
 
             try (PreparedStatement insertGen = CNX.prepareStatement(QUERY_SG)) {
 
@@ -70,7 +76,7 @@ public class PersistObject {
                 insertGen.setString(5, cargo.getGeneralSegment().getGeneralSegmentId().getDateOfArrival().substring(0, 10));
                 insertGen.setString(6, cargo.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture().substring(0, 10));
                 insertGen.setString(7, cargo.getGeneralSegment().getGeneralSegmentId().getDateOfLastDischarge() != null ? cargo.getGeneralSegment().getGeneralSegmentId().getDateOfLastDischarge().substring(0, 10) : "");
-                insertGen.setString(8, cargo.getGeneralSegment().getTransportInformation().getDateOfRegistration());
+                insertGen.setString(8, date_enregistrement_douane);
                 insertGen.setString(9, cargo.getGeneralSegment().getTransportInformation().getIdentityOfTransporter());
                 insertGen.setString(10, cargo.getGeneralSegment().getTransportInformation().getMasterInformation());
                 insertGen.setString(11, REF.mode_trans.get(cargo.getGeneralSegment().getTransportInformation().getModeOfTransportCode()));
@@ -92,6 +98,14 @@ public class PersistObject {
                 insertGen.setDouble(26, cargo.getGeneralSegment().getTotalsSegment().getTotalNumberOfPackages());
                 insertGen.setString(27, cargo.getGeneralSegment().getGeneralSegmentId().getVoyageNumber());
                 insertGen.setInt(28, escale.getEscleunik());
+                insertGen.setString(29, dateheure[0]);
+                insertGen.setString(30, dateheure[1]);
+                insertGen.setString(31, numero_douane);
+                insertGen.setString(32, cargo.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equalsIgnoreCase("CGPNR")?"EXP":"IMP");
+                insertGen.setString(33, null);
+                insertGen.setString(34, null);
+                insertGen.setString(35, null);
+                
 
                 insertGen.executeUpdate();
             }
@@ -158,7 +172,6 @@ public class PersistObject {
                                     insertCtn.setString(2, String.valueOf(ctn.getEmptyFull()));
                                     insertCtn.setString(3, String.valueOf(ctn.getEmptyWeight()));
                                     insertCtn.setString(4, ctn.getGoodsWeight() == null ? "" : String.valueOf(ctn.getGoodsWeight()));
-//                                    insertCtn.setInt(5, id_bol);
                                     insertCtn.setString(5, ctn.getMarks1());
                                     insertCtn.setString(6, ctn.getMarks2());
                                     insertCtn.setString(7, ctn.getMarks3());
@@ -228,38 +241,56 @@ public class PersistObject {
     public static int existsManifeste(Awmds awmds) {
         CNX = DbHandler.getDbConnection();
         try {
-            ResultSet rst = CNX.createStatement().executeQuery("select id,id_escale from general_info where "
+            String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture(); 
+            LOG.info("select id,escleunik from MANIFESTE_SEGMENT_GENERAL where "
                     + "CUSTOMS_OFFICE_CODE like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
                     + "' and VOYAGE_NUMBER like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                     + "' and DATE_DEPARTURE like '"
-                    + awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture()
-                    + "'");
+                    + (depart.length()>10?depart.substring(0, 10):depart)
+                    + "' order by id desc");
+            ResultSet rst = CNX.createStatement().executeQuery("select id,escleunik from MANIFESTE_SEGMENT_GENERAL where "
+                    + "CUSTOMS_OFFICE_CODE like '"
+                    + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
+                    + "' and VOYAGE_NUMBER like '"
+                    + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
+                    + "' and DATE_DEPARTURE like '"
+                    + (depart.length()>10?depart.substring(0, 10):depart)
+                    + "' order by id desc");
             if (rst.next()) {
-                return rst.getInt("id");
+                int id = rst.getInt("id");
+                LOG.info("MANIFESTE TROUVE: " + id);
+                return id;
             }
         } catch (SQLException ex) {
             Logger.getLogger(ManifesteService.class.getName()).log(Level.SEVERE, null, ex);
         }
+        LOG.info("MANIFESTE NON EXISTANT");
         return 0;
     }
 
-    public static int updateBolPort(Awmds cargo, Escale escale, int id) {
+    public static void updateBolPort(Awmds awmds, Escale escale, int id,String numero_douane,String date_enregistrement_douane) {
         LOG.info("=======================================");
         LOG.info("========> DEBUT - MIS A JOUR DES PORTS DANS LA BASE DE DONNEE <======");
         int i = 0;
-        if (id == 0) {
-            id = existsManifeste(cargo);
-        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmm");
+        String[] dateheure = format.format(new Date()).split("-");
         if (id != 0) {
             try {
                 CNX = DbHandler.getDbConnection();
                 Statement stmt = CNX.createStatement();
-                try (PreparedStatement updateGi = CNX.prepareStatement("update general_info set id_escale =?, numero_escale=? where id=?")) {
+                String query1 = "update MANIFESTE_SEGMENT_GENERAL set ESCLEUNIK =?, NUMERO_ESCALE=?,DATE_UPDATE=?,HEURE_UPDATE=?,NUMERO_DOUANE='"+numero_douane+"',DATE_OF_REGISTRATION=?,TRAFIC=? where id=?";
+                String query2 = "update MANIFESTE_SEGMENT_GENERAL set ESCLEUNIK =?, NUMERO_ESCALE=?,DATE_UPDATE=?,HEURE_UPDATE=?,DATE_OF_REGISTRATION=?,TRAFIC=? where id=?";
+                String query = numero_douane.isEmpty()?query2:query1;
+                try (PreparedStatement updateGi = CNX.prepareStatement(query)) {
                     updateGi.setInt(1, escale.getEscleunik());
                     updateGi.setString(2, escale.getNumero());
-                    updateGi.setInt(3, id);
+                    updateGi.setString(3, dateheure[0]);
+                    updateGi.setString(4, dateheure[1]);
+                    updateGi.setString(5, date_enregistrement_douane);
+                    updateGi.setString(6,awmds.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equalsIgnoreCase("CGPNR")?"EXP":"IMP");
+                    updateGi.setInt(7, id);
 
                     if (updateGi.executeUpdate() == 1) {
                         LOG.info("Escale du manifeste id : " + id + " mis à jour avec numero d'escale " + escale.getNumero());
@@ -268,11 +299,13 @@ public class PersistObject {
 
 //                insertGen.setInt(1, id_gen);
                 CNX.setAutoCommit(false);
-
-                for (Awmds.BolSegment bol : cargo.getBolSegment().stream().filter(
-                        bl -> (bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
-                        || (bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
-                ).collect(Collectors.toList())) {
+                List<Awmds.BolSegment> list = awmds.getBolSegment()
+                        .stream().filter(
+                        bl -> (has(bl.getBolId().getBolNature())&& has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode())&& has(bl.getBolId().getBolNature())&& bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
+                                || (has(bl.getBolId().getBolNature())&& has(bl.getLoadUnloadPlace().getPlaceOfLoadingCode())&& has(bl.getBolId().getBolNature())&& bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
+                ).collect(Collectors.toList());
+                
+                for (Awmds.BolSegment bol : list) {
                     try (PreparedStatement updateBol = CNX.prepareStatement(QUERY_UPDATE_BOL)) {
                         updateBol.setString(1, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt));
                         updateBol.setString(2, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt));
@@ -293,7 +326,7 @@ public class PersistObject {
                     }
                 }
                 CNX.commit();
-                LOG.info("========> FIN- MIS A JOUR DES PORTS DANS LA BASE DE DONNEE AVCE BOLs MIS A JOUR :" + i + "<======");
+                LOG.info("========> FIN- MIS A JOUR DES PORTS DANS LA BASE DE DONNEE AVEC BOLs MIS A JOUR :" + i + "<======");
             } catch (SQLException ex) {
 //                        LOG.warn("BOL N° " + id_bol);
                 if (ex instanceof java.sql.SQLSyntaxErrorException) {
@@ -305,8 +338,6 @@ public class PersistObject {
                 ex.printStackTrace();
             }
         }
-        LOG.info("BOLs MIS A JOUR : " + i);
-        return id;
     }
 
     /**
@@ -490,6 +521,10 @@ public class PersistObject {
             }
         });
         return ctnrs;
+    }
+
+    private static boolean has(String bolNature) {
+        return bolNature!=null && !bolNature.isEmpty();
     }
 
 }

@@ -31,22 +31,22 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
-     CONTAINER.id_ctn AS id_ctn,
-     CONTAINER.id_bol AS id_bol,
-     CONTAINER.Ctn_reference AS Ctn_reference,
-     CONTAINER.Number_of_packages AS Number_of_packages,
-     CONTAINER.Type_of_container AS Type_of_container,
-     CONTAINER.Empty_Full AS Empty_Full,
-     CONTAINER.Marks1 AS Marks1,
-     CONTAINER.Marks2 AS Marks2,
-     CONTAINER.Marks3 AS Marks3,
-     CONTAINER.Sealing_Party AS Sealing_Party,
-     CONTAINER.Empty_weight AS Empty_weight,
-     CONTAINER.Goods_weight AS Goods_weight
+     MANIFESTE_CONTENEUR.id AS id_ctn,
+     MANIFESTE_CONTENEUR.id_bl AS id_bol,
+     MANIFESTE_CONTENEUR.Ctn_reference AS Ctn_reference,
+     MANIFESTE_CONTENEUR.Number_of_packages AS Number_of_packages,
+     MANIFESTE_CONTENEUR.Type_of_container AS Type_of_container,
+     MANIFESTE_CONTENEUR.Empty_Full AS Empty_Full,
+     MANIFESTE_CONTENEUR.Marks1 AS Marks1,
+     MANIFESTE_CONTENEUR.Marks2 AS Marks2,
+     MANIFESTE_CONTENEUR.Marks3 AS Marks3,
+     MANIFESTE_CONTENEUR.Sealing_Party AS Sealing_Party,
+     MANIFESTE_CONTENEUR.Empty_weight AS Empty_weight,
+     MANIFESTE_CONTENEUR.Goods_weight AS Goods_weight
 FROM
-     CONTAINER CONTAINER
+     MANIFESTE_CONTENEUR MANIFESTE_CONTENEUR
 WHERE
-CONTAINER.id_bol=$P{id_bol}]]>
+MANIFESTE_CONTENEUR.id_bl=$P{id_bol}]]>
 	</queryString>
 	<field name="id_ctn" class="java.lang.Object"/>
 	<field name="id_bol" class="java.lang.Object"/>

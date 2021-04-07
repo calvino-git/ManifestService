@@ -64,7 +64,7 @@ public class importCongoTerminal {
 //                }
 //            });
 //        }
-/*
+
         for (File listFile : excel.listFiles()) {
             try {
                 if (listFile.getName().startsWith("~")) {
@@ -134,7 +134,7 @@ public class importCongoTerminal {
                 ex.printStackTrace();
             }
         }
-*/
+
         for (File listFile : excel.listFiles()) {
             if (Files.deleteIfExists(listFile.toPath())) {
                 LOG.info("FICHIER supprimé");

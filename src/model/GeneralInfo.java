@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Admin
  */
 @Entity
-@Table(name = "GENERAL_INFO", catalog = "", schema = "PPNCARGO")
+@Table(name = "MANIFESTE_SEGMENT_GENERAL", catalog = "", schema = "PPNCARGO")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "GeneralInfo.findAll", query = "SELECT g FROM GeneralInfo g")
@@ -157,7 +157,7 @@ public class GeneralInfo implements Serializable {
     private String voyageNumber;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idGeneral")
     private Collection<BillOfLanding> billOfLandingCollection;
-    @JoinColumn(name = "ID_ESCALE", referencedColumnName = "ESCLEUNIK")
+    @JoinColumn(name = "ESCLEUNIK", referencedColumnName = "ESCLEUNIK")
     @ManyToOne
     private Escale idEscale;
 
