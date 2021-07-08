@@ -79,10 +79,10 @@ public class BillOfLanding implements Serializable {
     @Size(max = 255)
     @Column(name = "PC_INDICATOR", length = 255)
     private String pcIndicator;
-    @Size(max = 255)
+    @Size(max = 255)@NotNull
     @Column(name = "BOL_NATURE", length = 255)
     private String bolNature;
-    @Size(max = 255)
+    @Size(max = 255)@NotNull
     @Column(name = "BOL_REFERENCE", length = 255)
     private String bolReference;
     @Size(max = 255)
@@ -167,10 +167,10 @@ public class BillOfLanding implements Serializable {
     @Size(max = 255)
     @Column(name = "PACKAGE_TYPE_CODE", length = 255)
     private String packageTypeCode;
-    @Size(max = 255)
+    @Size(max = 255)@NotNull
     @Column(name = "PLACE_OF_LOADING_CODE", length = 255)
     private String placeOfLoadingCode;
-    @Size(max = 255)
+    @Size(max = 255)@NotNull
     @Column(name = "PLACE_OF_UNLOADING_CODE", length = 255)
     private String placeOfUnloadingCode;
     @Size(max = 255)

@@ -10,6 +10,7 @@ import static util.Const.*;
 import dao.Escale;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,7 +52,7 @@ public class PersistObject {
         return portCode;
     }
 
-    public static int manifestToDB(Awmds cargo, Escale escale,String numero_douane,String date_enregistrement_douane) {
+    public static int manifestToDB(Awmds cargo, Escale escale, String numero_douane, String date_enregistrement_douane) {
         Statement id = null;
         ResultSet resultSet = null;
         int id_gen;
@@ -101,11 +102,10 @@ public class PersistObject {
                 insertGen.setString(29, dateheure[0]);
                 insertGen.setString(30, dateheure[1]);
                 insertGen.setString(31, numero_douane);
-                insertGen.setString(32, cargo.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equalsIgnoreCase("CGPNR")?"EXP":"IMP");
+                insertGen.setString(32, cargo.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equalsIgnoreCase("CGPNR") ? "EXP" : "IMP");
                 insertGen.setString(33, null);
                 insertGen.setString(34, null);
                 insertGen.setString(35, null);
-                
 
                 insertGen.executeUpdate();
             }
@@ -177,7 +177,26 @@ public class PersistObject {
                                     insertCtn.setString(7, ctn.getMarks3());
                                     insertCtn.setString(8, String.valueOf(ctn.getNumberOfPackages()));
                                     insertCtn.setString(9, ctn.getSealingParty());
-                                    insertCtn.setString(10, ctn.getTypeOfContainer());
+                                    String taille = "20";
+                                    if (ctn.getTypeOfContainer().length() > 2) {
+                                        switch (ctn.getTypeOfContainer().substring(0, 1)) {
+                                            case "2":
+                                                taille = "20";
+                                                break;
+                                            case "4":
+                                                taille = "40";
+                                                break;
+                                            case "3":
+                                                taille = "30";
+                                                break;
+                                            default:
+                                                taille = "20";
+                                        }
+                                    } else {
+                                        taille = ctn.getTypeOfContainer();
+                                    }
+
+                                    insertCtn.setString(10, taille);
 
                                     if (insertCtn.executeUpdate() > 0) {
                                         j++;
@@ -241,14 +260,14 @@ public class PersistObject {
     public static int existsManifeste(Awmds awmds) {
         CNX = DbHandler.getDbConnection();
         try {
-            String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture(); 
+            String depart = awmds.getGeneralSegment().getGeneralSegmentId().getDateOfDeparture();
             LOG.info("select id,escleunik from MANIFESTE_SEGMENT_GENERAL where "
                     + "CUSTOMS_OFFICE_CODE like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getCustomsOfficeCode()
                     + "' and VOYAGE_NUMBER like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                     + "' and DATE_DEPARTURE like '"
-                    + (depart.length()>10?depart.substring(0, 10):depart)
+                    + (depart.length() > 10 ? depart.substring(0, 10) : depart)
                     + "' order by id desc");
             ResultSet rst = CNX.createStatement().executeQuery("select id,escleunik from MANIFESTE_SEGMENT_GENERAL where "
                     + "CUSTOMS_OFFICE_CODE like '"
@@ -256,7 +275,7 @@ public class PersistObject {
                     + "' and VOYAGE_NUMBER like '"
                     + awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                     + "' and DATE_DEPARTURE like '"
-                    + (depart.length()>10?depart.substring(0, 10):depart)
+                    + (depart.length() > 10 ? depart.substring(0, 10) : depart)
                     + "' order by id desc");
             if (rst.next()) {
                 int id = rst.getInt("id");
@@ -270,7 +289,7 @@ public class PersistObject {
         return 0;
     }
 
-    public static void updateBolPort(Awmds awmds, Escale escale, int id,String numero_douane,String date_enregistrement_douane) {
+    public static void updateBolPort(Awmds awmds, Escale escale, int id, String numero_douane, String date_enregistrement_douane) {
         LOG.info("=======================================");
         LOG.info("========> DEBUT - MIS A JOUR DES PORTS DANS LA BASE DE DONNEE <======");
         int i = 0;
@@ -280,16 +299,16 @@ public class PersistObject {
             try {
                 CNX = DbHandler.getDbConnection();
                 Statement stmt = CNX.createStatement();
-                String query1 = "update MANIFESTE_SEGMENT_GENERAL set ESCLEUNIK =?, NUMERO_ESCALE=?,DATE_UPDATE=?,HEURE_UPDATE=?,NUMERO_DOUANE='"+numero_douane+"',DATE_OF_REGISTRATION=?,TRAFIC=? where id=?";
+                String query1 = "update MANIFESTE_SEGMENT_GENERAL set ESCLEUNIK =?, NUMERO_ESCALE=?,DATE_UPDATE=?,HEURE_UPDATE=?,NUMERO_DOUANE='" + numero_douane + "',DATE_OF_REGISTRATION=?,TRAFIC=? where id=?";
                 String query2 = "update MANIFESTE_SEGMENT_GENERAL set ESCLEUNIK =?, NUMERO_ESCALE=?,DATE_UPDATE=?,HEURE_UPDATE=?,DATE_OF_REGISTRATION=?,TRAFIC=? where id=?";
-                String query = numero_douane.isEmpty()?query2:query1;
+                String query = numero_douane.isEmpty() ? query2 : query1;
                 try (PreparedStatement updateGi = CNX.prepareStatement(query)) {
                     updateGi.setInt(1, escale.getEscleunik());
                     updateGi.setString(2, escale.getNumero());
                     updateGi.setString(3, dateheure[0]);
                     updateGi.setString(4, dateheure[1]);
                     updateGi.setString(5, date_enregistrement_douane);
-                    updateGi.setString(6,awmds.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equalsIgnoreCase("CGPNR")?"EXP":"IMP");
+                    updateGi.setString(6, awmds.getGeneralSegment().getLoadUnloadPlace().getPlaceOfDepartureCode().equalsIgnoreCase("CGPNR") ? "EXP" : "IMP");
                     updateGi.setInt(7, id);
 
                     if (updateGi.executeUpdate() == 1) {
@@ -298,35 +317,55 @@ public class PersistObject {
                 }
 
 //                insertGen.setInt(1, id_gen);
-                CNX.setAutoCommit(false);
+                
                 List<Awmds.BolSegment> list = awmds.getBolSegment()
                         .stream().filter(
-                        bl -> (has(bl.getBolId().getBolNature())&& has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode())&& has(bl.getBolId().getBolNature())&& bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
-                                || (has(bl.getBolId().getBolNature())&& has(bl.getLoadUnloadPlace().getPlaceOfLoadingCode())&& has(bl.getBolId().getBolNature())&& bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
-                ).collect(Collectors.toList());
-                
+                                bl -> (has(bl.getBolId().getBolNature()) && has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode()) && has(bl.getBolId().getBolNature()) && bl.getBolId().getBolNature().equalsIgnoreCase("28") && !bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
+                                || (has(bl.getBolId().getBolNature()) && has(bl.getLoadUnloadPlace().getPlaceOfLoadingCode()) && has(bl.getBolId().getBolNature()) && bl.getBolId().getBolNature().equalsIgnoreCase("29") && !bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR"))
+                        ).collect(Collectors.toList());
+                Connection connexion = DbHandler.getDbConnection();
+                connexion.setAutoCommit(true);
+                Statement updateBol = connexion.createStatement();
                 for (Awmds.BolSegment bol : list) {
-                    try (PreparedStatement updateBol = CNX.prepareStatement(QUERY_UPDATE_BOL)) {
-                        updateBol.setString(1, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt));
-                        updateBol.setString(2, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt));
-                        updateBol.setString(3, bol.getBolId().getBolReference());
-                        updateBol.setInt(4, id);
+//                    try (PreparedStatement updateBol = CNX.prepareStatement(QUERY_UPDATE_BOL)) {
+//                        updateBol.setString(1, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt));
+//                        updateBol.setString(2, getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt));
+//                        updateBol.setString(3, bol.getBolId().getBolReference());
+//                        updateBol.setInt(4, id);
+                    String queryBol = "UPDATE MANIFESTE_BL SET PLACE_OF_LOADING_CODE='" + getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfLoadingCode(), stmt)
+                            + "',PLACE_OF_UNLOADING_CODE='" + getPortLibelle(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode(), stmt)
+                            + "' WHERE BOL_REFERENCE= '" + bol.getBolId().getBolReference()
+                            + "' AND ID_GENERAL=" + id;
 
-                        int test = updateBol.executeUpdate();
-                        if (test == 1) {
-                            LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference()
-                                    + " " + bol.getLoadUnloadPlace().getPlaceOfLoadingCode() + "->"
-                                    + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode() + ": SUCCES.");
-                        } else if (test == 0) {
-                            LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference() + " ECHOUE.");
-                        } else {
-                            LOG.info("===>MIS A JOUR Bol N° " + bol.getBolId().getBolReference() + " = " + test);
-                        }
-                        i++;
+                    updateBol.addBatch(queryBol);
+                    LOG.info("==>" + queryBol + "<==");
+                    i++;
+//                    }
+                }
+                int[] test = updateBol.executeBatch();
+//                connexion.commit();
+                int succes = 0;
+                int echec = 0;
+                int rien = 0;
+                for (int j = 0; j < test.length; j++) {
+                    switch (j) {
+                        case 1:
+                            succes++;
+                            break;
+                        case 0:
+                            echec++;
+                            break;
+                        default:
+                            rien++;
+                            break;
                     }
                 }
-                CNX.commit();
-                LOG.info("========> FIN- MIS A JOUR DES PORTS DANS LA BASE DE DONNEE AVEC BOLs MIS A JOUR :" + i + "<======");
+                
+                LOG.info("===>MIS A JOUR BL " + succes + " SUCCES.");
+                LOG.info("===>MIS A JOUR BL" + echec + " ECHOUE.");
+                LOG.info("===>MIS A JOUR BL" + rien + " NULL.");
+                
+                LOG.info("========> FIN- MIS A JOUR DES PORTS DANS LA BASE DE DONNEE AVEC BOLs MIS A JOUR : " + i + " <======");
             } catch (SQLException ex) {
 //                        LOG.warn("BOL N° " + id_bol);
                 if (ex instanceof java.sql.SQLSyntaxErrorException) {
@@ -493,7 +532,7 @@ public class PersistObject {
         Container newctn = new Container();
         /**
          * recuperation des donnees concernant les conteneurs contenus dans le
-         * B/L bol depuis un instance de la classe JAXB Awmds.bolsegment qui
+         * B/L bol depuis une instance de la classe JAXB Awmds.bolsegment qui
          * contient les donnees du xml manifest
          */
         bolsegment.getCtnSegment().stream().forEach((ctn) -> {
@@ -524,7 +563,7 @@ public class PersistObject {
     }
 
     private static boolean has(String bolNature) {
-        return bolNature!=null && !bolNature.isEmpty();
+        return bolNature != null && !bolNature.isEmpty();
     }
 
 }

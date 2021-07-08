@@ -41,8 +41,8 @@ public class PortDestination {
 
         try {
             List<Awmds.BolSegment> bols = manifest.getBolSegment()
-                    .stream().filter(bl -> (has(bl.getBolId().getBolNature())&& has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode())&& bl.getBolId().getBolNature().equalsIgnoreCase("28") && bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
-                    || (has(bl.getBolId().getBolNature())&& has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode())&& bl.getBolId().getBolNature().equalsIgnoreCase("29") && bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR")))
+                    .stream().filter(bl -> (has(bl.getBolId().getBolNature()) && has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode()) && bl.getBolId().getBolNature().equalsIgnoreCase("28") && bl.getLoadUnloadPlace().getPlaceOfUnloadingCode().equalsIgnoreCase("CGPNR"))
+                    || (has(bl.getBolId().getBolNature()) && has(bl.getLoadUnloadPlace().getPlaceOfUnloadingCode()) && bl.getBolId().getBolNature().equalsIgnoreCase("29") && bl.getLoadUnloadPlace().getPlaceOfLoadingCode().equalsIgnoreCase("CGPNR")))
                     .collect(Collectors.toList());
 
             for (Awmds.BolSegment bol : bols) {
@@ -62,55 +62,57 @@ public class PortDestination {
                 LOG.info("BL AVANT : POL / POD = " + bol.getBolId().getBolReference()
                         + " : " + bol.getLoadUnloadPlace().getPlaceOfLoadingCode()
                         + "/" + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode());
-                for (Awmds.BolSegment.CtnSegment ctn : bol.getCtnSegment()) {
-                    if (query != null) {
-                        listCtnr = query.setParameter("numCtn", ctn.getCtnReference()).setParameter("mois", mois).getResultList();
-                        LOG.info("Resultat de " + ctn.getCtnReference() + " : " + listCtnr.size());
-                        if (!listCtnr.isEmpty()) {
-                            boolean isFound = false;
-                            for (CongoTerminal ctnr : listCtnr) {
-                                if (bol.getLoadUnloadPlace().getPlaceOfLoadingCode().equals("CGPNR") && ctnr.getTrafic().equals("T") && ctnr.getPol() != null) {
-                                    if ((ctnr.getPol() != null && !ctnr.getPol().isEmpty() && !ctnr.getPol().equals("CGPNR"))) {
-                                        if ((!ctnr.getPol().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
-                                            bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getPol());
-                                            isFound = true;
-                                        }
-                                    } else if ((ctnr.getOpl() != null && !ctnr.getOpl().isEmpty() && !ctnr.getOpl().equals("CGPNR"))) {
-                                        if ((!ctnr.getOpl().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
-                                            bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getOpl());
-                                            isFound = true;
-                                        }
-                                    }
-                                } else if (bol.getLoadUnloadPlace().getPlaceOfUnloadingCode().equals("CGPNR") && ctnr.getTrafic().equals("T") && ctnr.getPol() != null) {
-                                    if ((ctnr.getPod() != null && (!ctnr.getPod().isEmpty()) && !ctnr.getPod().equals("CGPNR"))) {
-                                        if ((!ctnr.getPod().equals(bol.getLoadUnloadPlace().getPlaceOfLoadingCode()))) {
-                                            if (ctnr.getPod() != null && (!ctnr.getPod().isEmpty())) {
-                                                bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(ctnr.getPod());
+                if (bol.getBolId().getBolNature().equals("28")||bol.getBolId().getBolNature().equals("29")) {
+                    for (Awmds.BolSegment.CtnSegment ctn : bol.getCtnSegment()) {
+                        if (query != null) {
+                            listCtnr = query.setParameter("numCtn", ctn.getCtnReference()).setParameter("mois", mois).getResultList();
+                            LOG.info("Resultat de " + ctn.getCtnReference() + " : " + listCtnr.size());
+                            if (!listCtnr.isEmpty()) {
+                                boolean isFound = false;
+                                for (CongoTerminal ctnr : listCtnr) {
+                                    if (bol.getLoadUnloadPlace().getPlaceOfLoadingCode().equals("CGPNR") && ctnr.getTrafic().equals("T") && ctnr.getPol() != null) {
+                                        if ((ctnr.getPol() != null && !ctnr.getPol().isEmpty() && !ctnr.getPol().equals("CGPNR"))) {
+                                            if ((!ctnr.getPol().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
+                                                bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getPol());
+                                                isFound = true;
+                                            }
+                                        } else if ((ctnr.getOpl() != null && !ctnr.getOpl().isEmpty() && !ctnr.getOpl().equals("CGPNR"))) {
+                                            if ((!ctnr.getOpl().equals(bol.getLoadUnloadPlace().getPlaceOfUnloadingCode()))) {
+                                                bol.getLoadUnloadPlace().setPlaceOfLoadingCode(ctnr.getOpl());
                                                 isFound = true;
                                             }
                                         }
-                                    } else if ((ctnr.getPdesf() != null && (!ctnr.getPdesf().isEmpty()) && !ctnr.getPdesf().equals("CGPNR"))) {
-                                        if ((!ctnr.getPdesf().equals(bol.getLoadUnloadPlace().getPlaceOfLoadingCode()))) {
-                                            bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(ctnr.getPdesf());
-                                            isFound = true;
+                                    } else if (bol.getLoadUnloadPlace().getPlaceOfUnloadingCode().equals("CGPNR") && ctnr.getTrafic().equals("T") && ctnr.getPod() != null) {
+                                        if ((ctnr.getPod() != null && (!ctnr.getPod().isEmpty()) && !ctnr.getPod().equals("CGPNR"))) {
+                                            if ((!ctnr.getPod().equals(bol.getLoadUnloadPlace().getPlaceOfLoadingCode()))) {
+                                                if (ctnr.getPod() != null && (!ctnr.getPod().isEmpty())) {
+                                                    bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(ctnr.getPod());
+                                                    isFound = true;
+                                                }
+                                            }
+                                        } else if ((ctnr.getPdesf() != null && (!ctnr.getPdesf().isEmpty()) && !ctnr.getPdesf().equals("CGPNR"))) {
+                                            if ((!ctnr.getPdesf().equals(bol.getLoadUnloadPlace().getPlaceOfLoadingCode()))) {
+                                                bol.getLoadUnloadPlace().setPlaceOfUnloadingCode(ctnr.getPdesf());
+                                                isFound = true;
+                                            }
                                         }
+                                    } else {
+                                        LOG.info("BL  N° " + ctnr.getNumCtn() + " CORRECT");
+                                        isFound = true;
                                     }
-                                } else {
-                                    LOG.info("BL  N° " + ctnr.getNumCtn() + " CORRECT");
-                                    isFound = true;
-                                }
-                                if (isFound == true) {
-                                    test = 1;
-                                    break;
+                                    if (isFound == true) {
+                                        test = 1;
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (test == 1) {
-                        LOG.info("BL APRES : POL / POD = " + bol.getBolId().getBolReference() + ": "
-                                + bol.getLoadUnloadPlace().getPlaceOfLoadingCode() + " => "
-                                + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode());
-                        break;
+                        if (test == 1) {
+                            LOG.info("BL APRES : POL / POD = " + bol.getBolId().getBolReference() + ": "
+                                    + bol.getLoadUnloadPlace().getPlaceOfLoadingCode() + " => "
+                                    + bol.getLoadUnloadPlace().getPlaceOfUnloadingCode());
+                            break;
+                        }
                     }
                 }
             }
@@ -120,7 +122,7 @@ public class PortDestination {
     }
 
     private static boolean has(String bolNature) {
-        return bolNature!=null && !bolNature.isEmpty();
+        return bolNature != null && !bolNature.isEmpty();
     }
 
 }

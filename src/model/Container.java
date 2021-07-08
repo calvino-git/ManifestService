@@ -45,9 +45,10 @@ public class Container implements Serializable {
     @Id
     @Basic(optional = false)
     @NotNull
-    @Column(name = "ID_CTN", nullable = false)
+    @Column(name = "ID_CTN")
     private Integer idCtn;
     @Size(max = 255)
+    @NotNull
     @Column(name = "CTN_REFERENCE", length = 255)
     private String ctnReference;
     @Size(max = 255)
@@ -56,6 +57,7 @@ public class Container implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "EMPTY_WEIGHT", precision = 126)
     private String emptyWeight;
+    @NotNull
     @Column(name = "GOODS_WEIGHT", precision = 126)
     private String goodsWeight;
     @Size(max = 255)
@@ -72,8 +74,9 @@ public class Container implements Serializable {
     @Size(max = 255)
     @Column(name = "SEALING_PARTY", length = 255)
     private String sealingParty;
-    @Size(max = 255)
-    @Column(name = "TYPE_OF_CONTAINER", length = 255)
+    @Size(max = 2)
+    @NotNull
+    @Column(name = "TYPE_OF_CONTAINER", length = 2)
     private String typeOfContainer;
     @JoinColumn(name = "ID_BOL", referencedColumnName = "ID_BOL")
     @ManyToOne

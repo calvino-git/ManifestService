@@ -64,6 +64,7 @@ public class ManifestMethods {
             fileXML.renameTo(new File(DOSSIER_MANIFEST_ERR + fileXML.getName()));
 
         }
+        awmds.getGeneralSegment().getGeneralSegmentId().setVoyageNumber(awmds.getGeneralSegment().getGeneralSegmentId().getVoyageNumber().replaceAll("/", "_"));
         return isManifest == false ? null : awmds;
     }
 
@@ -484,11 +485,13 @@ public class ManifestMethods {
                 str[0] = str[0] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
                 str[1] = str[1] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
                 return str;
@@ -496,11 +499,13 @@ public class ManifestMethods {
                 str[0] = str[0] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 str[1] = str[1] + File.separator + "Manifest-PAPN-EXP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 return str;
@@ -528,11 +533,13 @@ public class ManifestMethods {
                 str[0] = str[0] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
                 str[1] = str[1] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + trim[trim.length - 2]
                         + "-" + trim[trim.length - 1];
 
@@ -542,11 +549,13 @@ public class ManifestMethods {
                 str[0] = str[0] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 str[1] = str[1] + File.separator + "Manifest-PAPN-IMP-" + newEscale.getEscleunik() + "-" + newEscale.getNumero()
                         + "-" + dateFormater(newEscale.getDateArrivee()).format(DateTimeFormatter.BASIC_ISO_DATE)
                         + "-" + dateFormater(newEscale.getDateDepart()).format(DateTimeFormatter.BASIC_ISO_DATE)
+                        + "-" + man.getGeneralSegment().getGeneralSegmentId().getVoyageNumber()
                         + "-" + man.getGeneralSegment().getTransportInformation().getCarrier().getCarrierCode()
                         + ".xml";
                 return str;
